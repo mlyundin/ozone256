@@ -1,4 +1,4 @@
-package stockshandler
+package stocks
 
 import (
 	"context"
