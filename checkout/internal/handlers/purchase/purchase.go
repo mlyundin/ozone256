@@ -39,7 +39,11 @@ func (h *Handler) Handle(ctx context.Context, req Request) (Response, error) {
 	log.Printf("purchase: %+v", req)
 
 	var response Response
-	// TODO Оформить заказ по всем товарам корзины. Вызывает createOrder у LOMS.
+
+	err := h.businessLogic.Purchase(ctx, req.User)
+	if err != nil {
+		return response, err
+	}
 
 	return response, nil
 }

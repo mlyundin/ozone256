@@ -7,16 +7,17 @@ import (
 )
 
 type Client struct {
-	url string
-
-	urlStocks string
+	url            string
+	urlStocks      string
+	urlCreateOrder string
 }
 
 func New(url string) *Client {
 	return &Client{
 		url: url,
 
-		urlStocks: url + "/stocks",
+		urlStocks:      url + "/stocks",
+		urlCreateOrder: url + "/createOrder",
 	}
 }
 
@@ -48,4 +49,27 @@ func (c *Client) Stocks(ctx context.Context, sku uint32) ([]domain.Stock, error)
 	}
 
 	return stocks, nil
+}
+
+type Item struct {
+	Sku   uint32 `json:"sku"`
+	Count uint16 `json:"count"`
+}
+
+type CreateOrderRequest struct {
+	User  int64  `json:"user"`
+	Items []Item `json:"items"`
+}
+
+type CreateOrderResponse struct {
+	OrderID int64 `json:"orderID"`
+}
+
+func (c *Client) CreateOrder(ctx context.Context, userID int64) (int64, error) { // TODO add params
+	response, err := httpclient.Send[CreateOrderRequest, CreateOrderResponse](ctx, c.urlCreateOrder, CreateOrderRequest{User: userID})
+	if err != nil {
+		return 0, err
+	}
+
+	return response.OrderID, nil
 }
