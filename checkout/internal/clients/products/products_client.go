@@ -32,7 +32,7 @@ type GetProductResponse struct {
 	Price uint32 `json:"price"`
 }
 
-func (c *Client) GetProduct(ctx context.Context, sku uint32) (domain.ProductDesc, error) {
+func (c *Client) Product(ctx context.Context, sku uint32) (domain.ProductDesc, error) {
 	response, err := httpclient.Send[GetProductRequest, GetProductResponse](ctx, c.urlGetProduct,
 		GetProductRequest{Token: c.token, Sku: sku})
 	if err != nil {
@@ -52,12 +52,12 @@ type GetSkustResponse struct {
 	Skus []uint32 `json:"Skus"`
 }
 
-func (c *Client) GetSkus(ctx context.Context, startAfterSku uint32, count uint32) error {
+func (c *Client) Skus(ctx context.Context, startAfterSku uint32, count uint32) ([]uint32, error) {
 	_, err := httpclient.Send[GetSkusRequest, GetSkustResponse](ctx, c.urlListSkus,
 		GetSkusRequest{Token: c.token, StartAfterSku: startAfterSku, Count: count}) // TODO handle response
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return []uint32{}, nil
 }

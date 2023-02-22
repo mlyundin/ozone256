@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"route256/checkout/internal/clients/loms"
+	"route256/checkout/internal/clients/products"
 	"route256/checkout/internal/config"
 	"route256/checkout/internal/domain"
 	"route256/checkout/internal/handlers/addtocart"
@@ -22,7 +23,8 @@ func main() {
 	}
 
 	lomsClient := loms.New(config.ConfigData.Services.Loms)
-	businessLogic := domain.New(lomsClient)
+	productClient := products.New(config.ConfigData.Services.Products.Url, config.ConfigData.Services.Products.Token)
+	businessLogic := domain.New(lomsClient, productClient)
 
 	addToCartHandler := addtocart.New(businessLogic)
 	deleteFromCartHandler := deleteFromCart.New(businessLogic)
