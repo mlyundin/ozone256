@@ -6,6 +6,10 @@ type StocksChecker interface {
 	Stocks(ctx context.Context, sku uint32) ([]Stock, error)
 }
 
+type ProductChecker interface {
+	Product(ctx context.Context, sku uint32) ([]Stock, error)
+}
+
 type Model struct {
 	stocksChecker StocksChecker
 }

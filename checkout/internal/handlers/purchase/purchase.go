@@ -1,4 +1,4 @@
-package addtocart
+package purchase
 
 import (
 	"context"
@@ -18,14 +18,11 @@ func New(businessLogic *domain.Model) *Handler {
 }
 
 type Request struct {
-	User  int64  `json:"user"`
-	Sku   uint32 `json:"sku"`
-	Count uint16 `json:"count"`
+	User int64 `json:"user"`
 }
 
 var (
 	ErrEmptyUser = errors.New("empty user")
-	ErrEmptySKU  = errors.New("empty sku")
 )
 
 func (r Request) Validate() error {
@@ -39,14 +36,10 @@ type Response struct {
 }
 
 func (h *Handler) Handle(ctx context.Context, req Request) (Response, error) {
-	log.Printf("addToCart: %+v", req)
+	log.Printf("purchase: %+v", req)
 
 	var response Response
-
-	err := h.businessLogic.AddToCart(ctx, req.User, req.Sku, req.Count)
-	if err != nil {
-		return response, err
-	}
+	// TODO Оформить заказ по всем товарам корзины. Вызывает createOrder у LOMS.
 
 	return response, nil
 }

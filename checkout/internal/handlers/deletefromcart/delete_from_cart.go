@@ -1,4 +1,4 @@
-package addtocart
+package deleteFromCart
 
 import (
 	"context"
@@ -25,7 +25,6 @@ type Request struct {
 
 var (
 	ErrEmptyUser = errors.New("empty user")
-	ErrEmptySKU  = errors.New("empty sku")
 )
 
 func (r Request) Validate() error {
@@ -39,14 +38,10 @@ type Response struct {
 }
 
 func (h *Handler) Handle(ctx context.Context, req Request) (Response, error) {
-	log.Printf("addToCart: %+v", req)
+	log.Printf("deleteFromCart: %+v", req)
 
+	// TODO add название и цена тянутся из ProductService.get_product
 	var response Response
-
-	err := h.businessLogic.AddToCart(ctx, req.User, req.Sku, req.Count)
-	if err != nil {
-		return response, err
-	}
 
 	return response, nil
 }
