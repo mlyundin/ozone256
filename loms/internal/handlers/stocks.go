@@ -23,9 +23,7 @@ type StocksResponse struct {
 	Stocks []StockItem `json:"stocks"`
 }
 
-type StocksHandler struct{}
-
-func (h *StocksHandler) Handle(ctx context.Context, request StocksRequest) (StocksResponse, error) {
+func (h *Handler) HandleStocks(ctx context.Context, request StocksRequest) (StocksResponse, error) {
 	log.Printf("stocks: %+v", request)
 	return StocksResponse{
 		Stocks: []StockItem{

@@ -3,18 +3,7 @@ package handlers
 import (
 	"context"
 	"log"
-	"route256/checkout/internal/domain"
 )
-
-type PurchaseHandler struct {
-	businessLogic *domain.Model
-}
-
-func NewPurchaseHandler(businessLogic *domain.Model) *PurchaseHandler {
-	return &PurchaseHandler{
-		businessLogic: businessLogic,
-	}
-}
 
 type PurchaseRequest struct {
 	User int64 `json:"user"`
@@ -30,7 +19,7 @@ func (r PurchaseRequest) Validate() error {
 type PurchaseResponse struct {
 }
 
-func (h *PurchaseHandler) Handle(ctx context.Context, req PurchaseRequest) (PurchaseResponse, error) {
+func (h *Handler) HandlePurchase(ctx context.Context, req PurchaseRequest) (PurchaseResponse, error) {
 	log.Printf("purchase: %+v", req)
 
 	var response PurchaseResponse

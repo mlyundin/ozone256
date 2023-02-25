@@ -23,15 +23,11 @@ func main() {
 	productClient := products.New(config.ConfigData.Services.Products.Url, config.ConfigData.Services.Products.Token)
 	businessLogic := domain.New(lomsClient, productClient)
 
-	addToCartHandler := handlers.NewAddToCartHandler(businessLogic)
-	deleteFromCartHandler := handlers.NewDeleteFromCartHandler(businessLogic)
-	listCartHandler := handlers.NewListCartHandler(businessLogic)
-	purchaseHandler := handlers.NewPurchaseHandler(businessLogic)
-
-	http.Handle("/addToCart", srvwrapper.New(addToCartHandler.Handle))
-	http.Handle("/deleteFromCart", srvwrapper.New(deleteFromCartHandler.Handle))
-	http.Handle("/listCart", srvwrapper.New(listCartHandler.Handle))
-	http.Handle("/purchase", srvwrapper.New(purchaseHandler.Handle))
+	handler := handlers.NewHandler(businessLogic)
+	http.Handle("/addToCart", srvwrapper.New(handler.HandleAddToCart))
+	http.Handle("/deleteFromCart", srvwrapper.New(handler.HandleDeleteFromCart))
+	http.Handle("/listCart", srvwrapper.New(handler.HandleListCart))
+	http.Handle("/purchase", srvwrapper.New(handler.HandlePurchase))
 
 	log.Println("listening http at", port)
 	err = http.ListenAndServe(port, nil)

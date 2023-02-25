@@ -26,9 +26,7 @@ type CreateOrderResponse struct {
 	OrderID int64 `json:"orderID"`
 }
 
-type CreateOrderHandler struct{}
-
-func (h *CreateOrderHandler) Handle(ctx context.Context, request CreateOrderRequest) (CreateOrderResponse, error) {
+func (h *Handler) HandleCreateOrder(ctx context.Context, request CreateOrderRequest) (CreateOrderResponse, error) {
 	log.Printf("createOrder: %+v", request)
 	return CreateOrderResponse{OrderID: 12345}, nil
 }

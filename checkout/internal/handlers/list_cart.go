@@ -3,18 +3,7 @@ package handlers
 import (
 	"context"
 	"log"
-	"route256/checkout/internal/domain"
 )
-
-type ListCartHandler struct {
-	businessLogic *domain.Model
-}
-
-func NewListCartHandler(businessLogic *domain.Model) *ListCartHandler {
-	return &ListCartHandler{
-		businessLogic: businessLogic,
-	}
-}
 
 type ListCartRequest struct {
 	User int64 `json:"user"`
@@ -39,7 +28,7 @@ type ListCartResponse struct {
 	TotalPrice uint32 `json:"totalPrice"`
 }
 
-func (h *ListCartHandler) Handle(ctx context.Context, req ListCartRequest) (ListCartResponse, error) {
+func (h *Handler) HandleListCart(ctx context.Context, req ListCartRequest) (ListCartResponse, error) {
 	log.Printf("listCart: %+v", req)
 
 	var response ListCartResponse

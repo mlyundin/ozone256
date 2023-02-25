@@ -13,7 +13,8 @@ type Item struct {
 	Count uint16 `json:"count"`
 }
 
-func NewHandler[Handler any]() *Handler {
-	var h Handler
-	return &h
+type Handler struct{}
+
+func NewHandler() *Handler {
+	return &Handler{}
 }

@@ -3,18 +3,7 @@ package handlers
 import (
 	"context"
 	"log"
-	"route256/checkout/internal/domain"
 )
-
-type Handler struct {
-	businessLogic *domain.Model
-}
-
-func NewAddToCartHandler(businessLogic *domain.Model) *Handler {
-	return &Handler{
-		businessLogic: businessLogic,
-	}
-}
 
 type AddToCartRequest struct {
 	User  int64  `json:"user"`
@@ -32,7 +21,7 @@ func (r AddToCartRequest) Validate() error {
 type AddToCartResponse struct {
 }
 
-func (h *Handler) Handle(ctx context.Context, req AddToCartRequest) (AddToCartResponse, error) {
+func (h *Handler) HandleAddToCart(ctx context.Context, req AddToCartRequest) (AddToCartResponse, error) {
 	log.Printf("addToCart: %+v", req)
 
 	var response AddToCartResponse
