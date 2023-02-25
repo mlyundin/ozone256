@@ -13,7 +13,7 @@ type ConfigStruct struct {
 		Products struct {
 			Token string `yaml:"token"`
 			Url   string `yaml:"url"`
-		}
+		} `yaml:"products"`
 	} `yaml:"services"`
 }
 
