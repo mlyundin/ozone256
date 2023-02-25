@@ -1,31 +1,26 @@
-package listcart
+package handlers
 
 import (
 	"context"
-	"errors"
 	"log"
 	"route256/checkout/internal/domain"
 )
 
-type Handler struct {
+type ListCartHandler struct {
 	businessLogic *domain.Model
 }
 
-func New(businessLogic *domain.Model) *Handler {
-	return &Handler{
+func NewListCartHandler(businessLogic *domain.Model) *ListCartHandler {
+	return &ListCartHandler{
 		businessLogic: businessLogic,
 	}
 }
 
-type Request struct {
+type ListCartRequest struct {
 	User int64 `json:"user"`
 }
 
-var (
-	ErrEmptyUser = errors.New("empty user")
-)
-
-func (r Request) Validate() error {
+func (r ListCartRequest) Validate() error {
 	if r.User == 0 {
 		return ErrEmptyUser
 	}
@@ -39,15 +34,15 @@ type Item struct {
 	Price uint32 `json:"price"`
 }
 
-type Response struct {
+type ListCartResponse struct {
 	Items      []Item `json:"items"`
 	TotalPrice uint32 `json:"totalPrice"`
 }
 
-func (h *Handler) Handle(ctx context.Context, req Request) (Response, error) {
+func (h *ListCartHandler) Handle(ctx context.Context, req ListCartRequest) (ListCartResponse, error) {
 	log.Printf("listCart: %+v", req)
 
-	var response Response
+	var response ListCartResponse
 
 	cart, err := h.businessLogic.ListCart(ctx, req.User)
 	if err != nil {

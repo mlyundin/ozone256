@@ -1,8 +1,7 @@
-package addtocart
+package handlers
 
 import (
 	"context"
-	"errors"
 	"log"
 	"route256/checkout/internal/domain"
 )
@@ -11,37 +10,32 @@ type Handler struct {
 	businessLogic *domain.Model
 }
 
-func New(businessLogic *domain.Model) *Handler {
+func NewAddToCartHandler(businessLogic *domain.Model) *Handler {
 	return &Handler{
 		businessLogic: businessLogic,
 	}
 }
 
-type Request struct {
+type AddToCartRequest struct {
 	User  int64  `json:"user"`
 	Sku   uint32 `json:"sku"`
 	Count uint16 `json:"count"`
 }
 
-var (
-	ErrEmptyUser = errors.New("empty user")
-	ErrEmptySKU  = errors.New("empty sku")
-)
-
-func (r Request) Validate() error {
+func (r AddToCartRequest) Validate() error {
 	if r.User == 0 {
 		return ErrEmptyUser
 	}
 	return nil
 }
 
-type Response struct {
+type AddToCartResponse struct {
 }
 
-func (h *Handler) Handle(ctx context.Context, req Request) (Response, error) {
+func (h *Handler) Handle(ctx context.Context, req AddToCartRequest) (AddToCartResponse, error) {
 	log.Printf("addToCart: %+v", req)
 
-	var response Response
+	var response AddToCartResponse
 
 	err := h.businessLogic.AddToCart(ctx, req.User, req.Sku, req.Count)
 	if err != nil {
