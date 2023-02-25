@@ -5,7 +5,6 @@ import (
 	"log"
 )
 
-
 type DeleteFromCartRequest struct {
 	User  int64  `json:"user"`
 	Sku   uint32 `json:"sku"`
