@@ -8,7 +8,7 @@ import (
 	"route256/checkout/internal/config"
 	"route256/checkout/internal/domain"
 	"route256/checkout/internal/handlers/addtocart"
-	deleteFromCart "route256/checkout/internal/handlers/deletefromcart"
+	"route256/checkout/internal/handlers/deletefromcart"
 	"route256/checkout/internal/handlers/listcart"
 	"route256/checkout/internal/handlers/purchase"
 	"route256/libs/srvwrapper"
@@ -27,7 +27,7 @@ func main() {
 	businessLogic := domain.New(lomsClient, productClient)
 
 	addToCartHandler := addtocart.New(businessLogic)
-	deleteFromCartHandler := deleteFromCart.New(businessLogic)
+	deleteFromCartHandler := deletefromcart.New(businessLogic)
 	listCartHandler := listcart.New(businessLogic)
 	purchaseHandler := purchase.New(businessLogic)
 
