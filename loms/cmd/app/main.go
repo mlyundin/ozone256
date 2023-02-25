@@ -4,22 +4,17 @@ import (
 	"log"
 	"net/http"
 	"route256/libs/srvwrapper"
-	"route256/loms/internal/handlers/cancelorder"
-	"route256/loms/internal/handlers/createorder"
-	"route256/loms/internal/handlers/listorder"
-	"route256/loms/internal/handlers/orderpayed"
-	"route256/loms/internal/handlers/stocks"
+	"route256/loms/internal/handlers"
 )
 
 const port = ":8081"
 
 func main() {
-
-	stocksHandler := stocks.New()
-	createOrderHandler := createorder.New()
-	cancelOrderHandler := cancelorder.New()
-	listOrderHandler := listorder.New()
-	oderPayedHandler := orderpayed.New()
+	stocksHandler := handlers.NewHandler[handlers.StocksHandler]()
+	createOrderHandler := handlers.NewHandler[handlers.CreateOrderHandler]()
+	cancelOrderHandler := handlers.NewHandler[handlers.CancelOrderHandler]()
+	listOrderHandler := handlers.NewHandler[handlers.ListOrderHandler]()
+	oderPayedHandler := handlers.NewHandler[handlers.OrderPayedHandler]()
 
 	http.Handle("/stocks", srvwrapper.New(stocksHandler.Handle))
 	http.Handle("/createOrder", srvwrapper.New(createOrderHandler.Handle))
