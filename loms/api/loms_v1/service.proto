@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package loms_v1;
+
+option go_package = "gitlab.ozon.dev/mlyundin/Homework/pkg/loms_v1;loms_v1";
+
+import "google/protobuf/empty.proto";
+
+service LomsV1 {
+
+  rpc Stoks (StocksRequest) returns (StoksResponse);
+
+  rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
+
+  rpc ListOrder (ListOrderRequest) returns (ListOrderResponse);
+
+  rpc CancelOrder (CancelOrderRequest) returns (google.protobuf.Empty);
+
+  rpc OrderPayed (OrderPayedRequest) returns (google.protobuf.Empty);
+}
+
+message StocksRequest {
+	uint32 sku = 1;
+}
+
+message StockItem {
+	int64 warehouseID = 1;
+	uint64 count = 2;     
+}
+
+message StoksResponse {
+	repeated StockItem stocks = 1;
+}
+
+message Item {
+	uint32 sku = 1; 
+  uint32 count = 2;
+}
+
+message CreateOrderRequest {
+	int64 user = 1;
+  repeated Item items = 2;
+}
+
+message CreateOrderResponse {
+	int64 orderId = 1;
+}
+
+message ListOrderRequest {
+  int64 orderId = 1;
+}
+
+message ListOrderResponse {
+  string status = 1;
+  int64 user = 2;
+  repeated Item items =3;
+}
+
+message CancelOrderRequest {
+  int64 orderId = 1;
+}
+
+message OrderPayedRequest {
+  int64 orderId = 1;
+}

@@ -8,7 +8,7 @@ PACKAGE=route256/loms/cmd/app
 
 all: format build test lint
 
-build: bindir
+build: bindir generate
 	go build -o ${BINDIR}/app ${PACKAGE}
 
 test:
@@ -38,3 +38,16 @@ install-smartimports: bindir
 	test -f ${SMARTIMPORTS} || \
 		(GOBIN=${BINDIR} go install github.com/pav5000/smartimports/cmd/smartimports@latest && \
 		mv ${BINDIR}/smartimports ${SMARTIMPORTS})
+
+get-go-deps:
+	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
+	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
+
+generate:
+	mkdir -p pkg/loms_v1
+	protoc -I api/loms_v1 -I ../vendor-proto \
+	--go_out=pkg/loms_v1 --go_opt=paths=source_relative \
+	--plugin=protoc-gen-go=../bin/protoc-gen-go \
+	--go-grpc_out=pkg/loms_v1 --go-grpc_opt=paths=source_relative \
+	--plugin=protoc-gen-go-grpc=../bin/protoc-gen-go-grpc \
+	api/loms_v1/service.proto
