@@ -2,9 +2,9 @@ package loms_v1
 
 import (
 	"context"
-	"route256/loms/internal/model"
 	"route256/loms/internal/service/loms"
 	desc "route256/loms/pkg/loms_v1"
+	"route256/loms/pkg/model"
 
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )

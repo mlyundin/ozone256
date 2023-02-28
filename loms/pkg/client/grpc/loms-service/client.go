@@ -3,9 +3,10 @@ package loms_client
 import (
 	"context"
 
-	"google.golang.org/grpc"
-	"route256/loms/internal/model"
 	lomsServiceAPI "route256/loms/pkg/loms_v1"
+	"route256/loms/pkg/model"
+
+	"google.golang.org/grpc"
 )
 
 var _ Client = (*client)(nil)

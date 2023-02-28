@@ -3,7 +3,7 @@ package loms
 import (
 	"context"
 
-	"route256/loms/internal/model"
+	"route256/loms/pkg/model"
 )
 
 func (s *service) ListOrder(ctx context.Context, orderId int64) (*model.Order, error) {

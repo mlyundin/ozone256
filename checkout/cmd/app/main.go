@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"route256/checkout/internal/clients/loms"
@@ -19,7 +20,7 @@ func main() {
 		log.Fatal("config init", err)
 	}
 
-	lomsClient := loms.New(config.ConfigData.Services.Loms)
+	lomsClient := loms.New(context.Background(), config.ConfigData.Services.Loms)
 	productClient := products.New(config.ConfigData.Services.Products.Url, config.ConfigData.Services.Products.Token)
 	businessLogic := domain.New(lomsClient, productClient)
 

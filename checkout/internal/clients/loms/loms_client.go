@@ -2,46 +2,38 @@ package loms
 
 import (
 	"context"
+	"log"
 	"route256/checkout/internal/domain"
-	"route256/libs/httpclient"
+	lomsClient "route256/loms/pkg/client/grpc/loms-service"
+	"route256/loms/pkg/model"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type Client struct {
-	url            string
-	urlStocks      string
-	urlCreateOrder string
+	grpcClient lomsClient.Client
 }
 
-func New(url string) *Client {
-	return &Client{
-		url: url,
+func New(ctx context.Context, address string) *Client {
 
-		urlStocks:      url + "/stocks",
-		urlCreateOrder: url + "/createOrder",
+	conn, err := grpc.DialContext(ctx, address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("failed to connect to server: %v", err)
 	}
-}
 
-type StocksRequest struct {
-	SKU uint32 `json:"sku"`
-}
-
-type StocksItem struct {
-	WarehouseID int64  `json:"warehouseID"`
-	Count       uint64 `json:"count"`
-}
-
-type StocksResponse struct {
-	Stocks []StocksItem `json:"stocks"`
+	grpcClient := lomsClient.New(conn)
+	return &Client{grpcClient}
 }
 
 func (c *Client) Stocks(ctx context.Context, sku uint32) ([]domain.Stock, error) {
-	response, err := httpclient.Send[StocksRequest, StocksResponse](ctx, c.urlStocks, StocksRequest{SKU: sku})
+	reqStocks, err := c.grpcClient.Stocks(ctx, sku)
 	if err != nil {
 		return nil, err
 	}
 
-	stocks := make([]domain.Stock, 0, len(response.Stocks))
-	for _, stock := range response.Stocks {
+	stocks := make([]domain.Stock, 0, len(reqStocks))
+	for _, stock := range reqStocks {
 		stocks = append(stocks, domain.Stock{
 			WarehouseID: stock.WarehouseID,
 			Count:       stock.Count,
@@ -51,25 +43,11 @@ func (c *Client) Stocks(ctx context.Context, sku uint32) ([]domain.Stock, error)
 	return stocks, nil
 }
 
-type Item struct {
-	Sku   uint32 `json:"sku"`
-	Count uint16 `json:"count"`
-}
-
-type CreateOrderRequest struct {
-	User  int64  `json:"user"`
-	Items []Item `json:"items"`
-}
-
-type CreateOrderResponse struct {
-	OrderID int64 `json:"orderID"`
-}
-
 func (c *Client) CreateOrder(ctx context.Context, userID int64) (int64, error) { // TODO add params
-	response, err := httpclient.Send[CreateOrderRequest, CreateOrderResponse](ctx, c.urlCreateOrder, CreateOrderRequest{User: userID})
+	orderId, err := c.grpcClient.CreateOrder(ctx, userID, []*model.Item{})
 	if err != nil {
 		return 0, err
 	}
 
-	return response.OrderID, nil
+	return orderId, nil
 }

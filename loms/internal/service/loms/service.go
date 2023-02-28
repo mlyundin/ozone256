@@ -2,7 +2,7 @@ package loms
 
 import (
 	"context"
-	"route256/loms/internal/model"
+	"route256/loms/pkg/model"
 )
 
 var _ Service = (*service)(nil)
