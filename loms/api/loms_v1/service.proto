@@ -8,7 +8,7 @@ import "google/protobuf/empty.proto";
 
 service LomsV1 {
 
-  rpc Stoks (StocksRequest) returns (StoksResponse);
+  rpc Stocks (StocksRequest) returns (StocksResponse);
 
   rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
 
@@ -28,7 +28,7 @@ message StockItem {
 	uint64 count = 2;     
 }
 
-message StoksResponse {
+message StocksResponse {
 	repeated StockItem stocks = 1;
 }
 

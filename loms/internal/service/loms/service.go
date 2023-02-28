@@ -8,7 +8,7 @@ import (
 var _ Service = (*service)(nil)
 
 type Service interface {
-	Stoks(ctx context.Context, sku uint32) ([]*model.StockItem, error)
+	Stocks(ctx context.Context, sku uint32) ([]*model.StockItem, error)
 
 	CreateOrder(ctx context.Context, user int64, items []*model.Item) (int64, error)
 
