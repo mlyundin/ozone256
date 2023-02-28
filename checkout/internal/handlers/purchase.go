@@ -19,7 +19,7 @@ func (r PurchaseRequest) Validate() error {
 type PurchaseResponse struct {
 }
 
-func (h *Handler) HandlePurchase(ctx context.Context, req PurchaseRequest) (PurchaseResponse, error) {
+func (h *Handler) Purchase(ctx context.Context, req PurchaseRequest) (PurchaseResponse, error) {
 	log.Printf("purchase: %+v", req)
 
 	var response PurchaseResponse

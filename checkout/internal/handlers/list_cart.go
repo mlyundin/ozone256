@@ -28,7 +28,7 @@ type ListCartResponse struct {
 	TotalPrice uint32 `json:"totalPrice"`
 }
 
-func (h *Handler) HandleListCart(ctx context.Context, req ListCartRequest) (ListCartResponse, error) {
+func (h *Handler) ListCart(ctx context.Context, req ListCartRequest) (ListCartResponse, error) {
 	log.Printf("listCart: %+v", req)
 
 	var response ListCartResponse

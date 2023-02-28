@@ -22,7 +22,7 @@ type ListOrderResponse struct {
 	Items  []Item `json:"items"`
 }
 
-func (h *Handler) HandleListOrder(ctx context.Context, request ListOrderRequest) (ListOrderResponse, error) {
+func (h *Handler) ListOrder(ctx context.Context, request ListOrderRequest) (ListOrderResponse, error) {
 	log.Printf("listOrder: %+v", request)
 	return ListOrderResponse{
 		User:   12345,

@@ -16,7 +16,7 @@ func (r CancelOrderRequest) Validate() error {
 type CancelOrderResponse struct {
 }
 
-func (h *Handler) HandleCancelOrder(ctx context.Context, request CancelOrderRequest) (CancelOrderResponse, error) {
+func (h *Handler) CancelOrder(ctx context.Context, request CancelOrderRequest) (CancelOrderResponse, error) {
 	log.Printf("cancelOrder: %+v", request)
 	return CancelOrderResponse{}, nil
 }

@@ -15,6 +15,6 @@ type Item struct {
 
 type Handler struct{}
 
-func NewHandler() *Handler {
+func New() *Handler {
 	return &Handler{}
 }
