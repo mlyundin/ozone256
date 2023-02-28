@@ -22,6 +22,6 @@ type Model interface {
 type domainmodel struct {
 }
 
-func NewService() *domainmodel {
+func New() *domainmodel {
 	return &domainmodel{}
 }

@@ -11,7 +11,7 @@ import (
 
 	"route256/libs/interceptors"
 	lomsV1 "route256/loms/internal/api/loms_v1"
-	"route256/loms/internal/service/loms"
+	"route256/loms/internal/domain"
 	desc "route256/loms/pkg/loms_v1"
 )
 
@@ -19,16 +19,6 @@ const port = ":8081"
 const grpcPort = 8081
 
 func main() {
-	// handler := handlers.New()
-	// http.Handle("/stocks", srvwrapper.New(handler.Stocks))
-	// http.Handle("/createOrder", srvwrapper.New(handler.CreateOrder))
-	// http.Handle("/listOrder", srvwrapper.New(handler.ListOrder))
-	// http.Handle("/cancelOrder", srvwrapper.New(handler.CancelOrder))
-	// http.Handle("/orderPayed", srvwrapper.New(handler.OrderPayed))
-
-	// log.Println("listening http at", port)
-	// err := http.ListenAndServe(port, nil)
-	// log.Fatal("cannot listen http", err)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
@@ -44,7 +34,7 @@ func main() {
 	)
 
 	reflection.Register(s)
-	desc.RegisterLomsV1Server(s, lomsV1.New(loms.NewService()))
+	desc.RegisterLomsV1Server(s, lomsV1.New(domain.New()))
 
 	log.Printf("server listening at %v", lis.Addr())
 

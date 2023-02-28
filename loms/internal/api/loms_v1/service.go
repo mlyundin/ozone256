@@ -2,7 +2,7 @@ package loms_v1
 
 import (
 	"context"
-	"route256/loms/internal/service/loms"
+	"route256/loms/internal/domain"
 	desc "route256/loms/pkg/loms_v1"
 	"route256/loms/pkg/model"
 
@@ -12,18 +12,18 @@ import (
 type Implementation struct {
 	desc.UnimplementedLomsV1Server
 
-	service loms.Service
+	domain domain.Model
 }
 
-func New(service loms.Service) *Implementation {
+func New(domain domain.Model) *Implementation {
 	return &Implementation{
 		desc.UnimplementedLomsV1Server{},
-		service,
+		domain,
 	}
 }
 
 func (impl *Implementation) OrderPayed(ctx context.Context, req *desc.OrderPayedRequest) (*emptypb.Empty, error) {
-	err := impl.service.OrderPayed(ctx, req.GetOrderId())
+	err := impl.domain.OrderPayed(ctx, req.GetOrderId())
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (impl *Implementation) OrderPayed(ctx context.Context, req *desc.OrderPayed
 }
 
 func (impl *Implementation) ListOrder(ctx context.Context, req *desc.ListOrderRequest) (*desc.ListOrderResponse, error) {
-	order, err := impl.service.ListOrder(ctx, req.GetOrderId())
+	order, err := impl.domain.ListOrder(ctx, req.GetOrderId())
 
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (impl *Implementation) CreateOrder(ctx context.Context, req *desc.CreateOrd
 		items = append(items, &model.Item{Sku: item.GetSku(), Count: uint16(item.GetCount())})
 	}
 
-	ordId, err := impl.service.CreateOrder(ctx, req.GetUser(), items)
+	ordId, err := impl.domain.CreateOrder(ctx, req.GetUser(), items)
 
 	if err != nil {
 		return nil, err
@@ -63,12 +63,12 @@ func (impl *Implementation) CreateOrder(ctx context.Context, req *desc.CreateOrd
 }
 
 func (impl *Implementation) CancelOrder(ctx context.Context, req *desc.CancelOrderRequest) (*emptypb.Empty, error) {
-	err := impl.service.CancelOrder(ctx, req.GetOrderId())
+	err := impl.domain.CancelOrder(ctx, req.GetOrderId())
 	return &emptypb.Empty{}, err
 }
 
 func (impl *Implementation) Stocks(ctx context.Context, req *desc.StocksRequest) (*desc.StocksResponse, error) {
-	stocks, err := impl.service.Stocks(ctx, req.GetSku())
+	stocks, err := impl.domain.Stocks(ctx, req.GetSku())
 
 	if err != nil {
 		return nil, err
