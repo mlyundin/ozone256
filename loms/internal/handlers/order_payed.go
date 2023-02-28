@@ -19,7 +19,7 @@ func (r OrderPayedRequest) Validate() error {
 type OrderPayedResponse struct {
 }
 
-func (h *Handler) HandleOrderPayed(ctx context.Context, request OrderPayedRequest) (OrderPayedResponse, error) {
+func (h *Handler) OrderPayed(ctx context.Context, request OrderPayedRequest) (OrderPayedResponse, error) {
 	log.Printf("orderPayed: %+v", request)
 	return OrderPayedResponse{}, nil
 }

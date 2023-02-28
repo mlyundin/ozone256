@@ -10,12 +10,12 @@ import (
 const port = ":8081"
 
 func main() {
-	handler := handlers.NewHandler()
-	http.Handle("/stocks", srvwrapper.New(handler.HandleStocks))
-	http.Handle("/createOrder", srvwrapper.New(handler.HandleCreateOrder))
-	http.Handle("/listOrder", srvwrapper.New(handler.HandleListOrder))
-	http.Handle("/cancelOrder", srvwrapper.New(handler.HandleCancelOrder))
-	http.Handle("/orderPayed", srvwrapper.New(handler.HandleOrderPayed))
+	handler := handlers.New()
+	http.Handle("/stocks", srvwrapper.New(handler.Stocks))
+	http.Handle("/createOrder", srvwrapper.New(handler.CreateOrder))
+	http.Handle("/listOrder", srvwrapper.New(handler.ListOrder))
+	http.Handle("/cancelOrder", srvwrapper.New(handler.CancelOrder))
+	http.Handle("/orderPayed", srvwrapper.New(handler.OrderPayed))
 
 	log.Println("listening http at", port)
 	err := http.ListenAndServe(port, nil)

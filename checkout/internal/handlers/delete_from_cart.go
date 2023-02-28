@@ -21,7 +21,7 @@ func (r DeleteFromCartRequest) Validate() error {
 type DeleteFromCartResponse struct {
 }
 
-func (h *Handler) HandleDeleteFromCart(ctx context.Context, req DeleteFromCartRequest) (DeleteFromCartResponse, error) {
+func (h *Handler) DeleteFromCart(ctx context.Context, req DeleteFromCartRequest) (DeleteFromCartResponse, error) {
 	log.Printf("deleteFromCart: %+v", req)
 
 	// TODO add название и цена тянутся из ProductService.get_product

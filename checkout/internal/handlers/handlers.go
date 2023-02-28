@@ -14,7 +14,7 @@ type Handler struct {
 	businessLogic *domain.Model
 }
 
-func NewHandler(businessLogic *domain.Model) *Handler {
+func New(businessLogic *domain.Model) *Handler {
 	return &Handler{
 		businessLogic: businessLogic,
 	}

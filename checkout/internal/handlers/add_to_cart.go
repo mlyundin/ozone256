@@ -21,7 +21,7 @@ func (r AddToCartRequest) Validate() error {
 type AddToCartResponse struct {
 }
 
-func (h *Handler) HandleAddToCart(ctx context.Context, req AddToCartRequest) (AddToCartResponse, error) {
+func (h *Handler) AddToCart(ctx context.Context, req AddToCartRequest) (AddToCartResponse, error) {
 	log.Printf("addToCart: %+v", req)
 
 	var response AddToCartResponse
