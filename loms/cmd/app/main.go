@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"log"
 	"net"
-
-	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-
 	"route256/libs/interceptors"
 	"route256/loms/internal/api/loms"
 	"route256/loms/internal/domain"
 	desc "route256/loms/pkg/loms"
+
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 const grpcPort = 8081

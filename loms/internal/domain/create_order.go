@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-
 	"route256/loms/pkg/model"
 )
 

@@ -5,22 +5,19 @@ import (
 	"fmt"
 	"log"
 	"net"
-
-	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/reflection"
-
-	"route256/libs/interceptors"
-	lomcln "route256/loms/pkg/client/grpc/loms-service"
-
 	"route256/checkout/internal/api/checkout"
 	"route256/checkout/internal/clients/loms"
 	"route256/checkout/internal/clients/products"
 	"route256/checkout/internal/config"
 	"route256/checkout/internal/domain"
-
 	desc "route256/checkout/pkg/checkout"
+	"route256/libs/interceptors"
+	lomcln "route256/loms/pkg/client/grpc/loms-service"
+
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 )
 
 const grpcPort = 8080
