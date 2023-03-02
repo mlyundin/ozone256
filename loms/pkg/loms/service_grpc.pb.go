@@ -19,10 +19,10 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// LomsV1Client is the client API for LomsV1 service.
+// LomsClient is the client API for Loms service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type LomsV1Client interface {
+type LomsClient interface {
 	Stocks(ctx context.Context, in *StocksRequest, opts ...grpc.CallOption) (*StocksResponse, error)
 	CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderResponse, error)
 	ListOrder(ctx context.Context, in *ListOrderRequest, opts ...grpc.CallOption) (*ListOrderResponse, error)
@@ -30,219 +30,219 @@ type LomsV1Client interface {
 	OrderPayed(ctx context.Context, in *OrderPayedRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
-type lomsV1Client struct {
+type lomsClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewLomsV1Client(cc grpc.ClientConnInterface) LomsV1Client {
-	return &lomsV1Client{cc}
+func NewLomsClient(cc grpc.ClientConnInterface) LomsClient {
+	return &lomsClient{cc}
 }
 
-func (c *lomsV1Client) Stocks(ctx context.Context, in *StocksRequest, opts ...grpc.CallOption) (*StocksResponse, error) {
+func (c *lomsClient) Stocks(ctx context.Context, in *StocksRequest, opts ...grpc.CallOption) (*StocksResponse, error) {
 	out := new(StocksResponse)
-	err := c.cc.Invoke(ctx, "/loms.LomsV1/Stocks", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/loms.Loms/Stocks", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *lomsV1Client) CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderResponse, error) {
+func (c *lomsClient) CreateOrder(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*CreateOrderResponse, error) {
 	out := new(CreateOrderResponse)
-	err := c.cc.Invoke(ctx, "/loms.LomsV1/CreateOrder", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/loms.Loms/CreateOrder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *lomsV1Client) ListOrder(ctx context.Context, in *ListOrderRequest, opts ...grpc.CallOption) (*ListOrderResponse, error) {
+func (c *lomsClient) ListOrder(ctx context.Context, in *ListOrderRequest, opts ...grpc.CallOption) (*ListOrderResponse, error) {
 	out := new(ListOrderResponse)
-	err := c.cc.Invoke(ctx, "/loms.LomsV1/ListOrder", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/loms.Loms/ListOrder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *lomsV1Client) CancelOrder(ctx context.Context, in *CancelOrderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *lomsClient) CancelOrder(ctx context.Context, in *CancelOrderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/loms.LomsV1/CancelOrder", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/loms.Loms/CancelOrder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *lomsV1Client) OrderPayed(ctx context.Context, in *OrderPayedRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *lomsClient) OrderPayed(ctx context.Context, in *OrderPayedRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/loms.LomsV1/OrderPayed", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/loms.Loms/OrderPayed", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// LomsV1Server is the server API for LomsV1 service.
-// All implementations must embed UnimplementedLomsV1Server
+// LomsServer is the server API for Loms service.
+// All implementations must embed UnimplementedLomsServer
 // for forward compatibility
-type LomsV1Server interface {
+type LomsServer interface {
 	Stocks(context.Context, *StocksRequest) (*StocksResponse, error)
 	CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderResponse, error)
 	ListOrder(context.Context, *ListOrderRequest) (*ListOrderResponse, error)
 	CancelOrder(context.Context, *CancelOrderRequest) (*emptypb.Empty, error)
 	OrderPayed(context.Context, *OrderPayedRequest) (*emptypb.Empty, error)
-	mustEmbedUnimplementedLomsV1Server()
+	mustEmbedUnimplementedLomsServer()
 }
 
-// UnimplementedLomsV1Server must be embedded to have forward compatible implementations.
-type UnimplementedLomsV1Server struct {
+// UnimplementedLomsServer must be embedded to have forward compatible implementations.
+type UnimplementedLomsServer struct {
 }
 
-func (UnimplementedLomsV1Server) Stocks(context.Context, *StocksRequest) (*StocksResponse, error) {
+func (UnimplementedLomsServer) Stocks(context.Context, *StocksRequest) (*StocksResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Stocks not implemented")
 }
-func (UnimplementedLomsV1Server) CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderResponse, error) {
+func (UnimplementedLomsServer) CreateOrder(context.Context, *CreateOrderRequest) (*CreateOrderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateOrder not implemented")
 }
-func (UnimplementedLomsV1Server) ListOrder(context.Context, *ListOrderRequest) (*ListOrderResponse, error) {
+func (UnimplementedLomsServer) ListOrder(context.Context, *ListOrderRequest) (*ListOrderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListOrder not implemented")
 }
-func (UnimplementedLomsV1Server) CancelOrder(context.Context, *CancelOrderRequest) (*emptypb.Empty, error) {
+func (UnimplementedLomsServer) CancelOrder(context.Context, *CancelOrderRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelOrder not implemented")
 }
-func (UnimplementedLomsV1Server) OrderPayed(context.Context, *OrderPayedRequest) (*emptypb.Empty, error) {
+func (UnimplementedLomsServer) OrderPayed(context.Context, *OrderPayedRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OrderPayed not implemented")
 }
-func (UnimplementedLomsV1Server) mustEmbedUnimplementedLomsV1Server() {}
+func (UnimplementedLomsServer) mustEmbedUnimplementedLomsServer() {}
 
-// UnsafeLomsV1Server may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to LomsV1Server will
+// UnsafeLomsServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to LomsServer will
 // result in compilation errors.
-type UnsafeLomsV1Server interface {
-	mustEmbedUnimplementedLomsV1Server()
+type UnsafeLomsServer interface {
+	mustEmbedUnimplementedLomsServer()
 }
 
-func RegisterLomsV1Server(s grpc.ServiceRegistrar, srv LomsV1Server) {
-	s.RegisterService(&LomsV1_ServiceDesc, srv)
+func RegisterLomsServer(s grpc.ServiceRegistrar, srv LomsServer) {
+	s.RegisterService(&Loms_ServiceDesc, srv)
 }
 
-func _LomsV1_Stocks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Loms_Stocks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StocksRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LomsV1Server).Stocks(ctx, in)
+		return srv.(LomsServer).Stocks(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/loms.LomsV1/Stocks",
+		FullMethod: "/loms.Loms/Stocks",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LomsV1Server).Stocks(ctx, req.(*StocksRequest))
+		return srv.(LomsServer).Stocks(ctx, req.(*StocksRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LomsV1_CreateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Loms_CreateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateOrderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LomsV1Server).CreateOrder(ctx, in)
+		return srv.(LomsServer).CreateOrder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/loms.LomsV1/CreateOrder",
+		FullMethod: "/loms.Loms/CreateOrder",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LomsV1Server).CreateOrder(ctx, req.(*CreateOrderRequest))
+		return srv.(LomsServer).CreateOrder(ctx, req.(*CreateOrderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LomsV1_ListOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Loms_ListOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListOrderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LomsV1Server).ListOrder(ctx, in)
+		return srv.(LomsServer).ListOrder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/loms.LomsV1/ListOrder",
+		FullMethod: "/loms.Loms/ListOrder",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LomsV1Server).ListOrder(ctx, req.(*ListOrderRequest))
+		return srv.(LomsServer).ListOrder(ctx, req.(*ListOrderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LomsV1_CancelOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Loms_CancelOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CancelOrderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LomsV1Server).CancelOrder(ctx, in)
+		return srv.(LomsServer).CancelOrder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/loms.LomsV1/CancelOrder",
+		FullMethod: "/loms.Loms/CancelOrder",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LomsV1Server).CancelOrder(ctx, req.(*CancelOrderRequest))
+		return srv.(LomsServer).CancelOrder(ctx, req.(*CancelOrderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LomsV1_OrderPayed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Loms_OrderPayed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(OrderPayedRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LomsV1Server).OrderPayed(ctx, in)
+		return srv.(LomsServer).OrderPayed(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/loms.LomsV1/OrderPayed",
+		FullMethod: "/loms.Loms/OrderPayed",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LomsV1Server).OrderPayed(ctx, req.(*OrderPayedRequest))
+		return srv.(LomsServer).OrderPayed(ctx, req.(*OrderPayedRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// LomsV1_ServiceDesc is the grpc.ServiceDesc for LomsV1 service.
+// Loms_ServiceDesc is the grpc.ServiceDesc for Loms service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var LomsV1_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "loms.LomsV1",
-	HandlerType: (*LomsV1Server)(nil),
+var Loms_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "loms.Loms",
+	HandlerType: (*LomsServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Stocks",
-			Handler:    _LomsV1_Stocks_Handler,
+			Handler:    _Loms_Stocks_Handler,
 		},
 		{
 			MethodName: "CreateOrder",
-			Handler:    _LomsV1_CreateOrder_Handler,
+			Handler:    _Loms_CreateOrder_Handler,
 		},
 		{
 			MethodName: "ListOrder",
-			Handler:    _LomsV1_ListOrder_Handler,
+			Handler:    _Loms_ListOrder_Handler,
 		},
 		{
 			MethodName: "CancelOrder",
-			Handler:    _LomsV1_CancelOrder_Handler,
+			Handler:    _Loms_CancelOrder_Handler,
 		},
 		{
 			MethodName: "OrderPayed",
-			Handler:    _LomsV1_OrderPayed_Handler,
+			Handler:    _Loms_OrderPayed_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

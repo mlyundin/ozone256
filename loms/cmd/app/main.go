@@ -33,7 +33,7 @@ func main() {
 	)
 
 	reflection.Register(s)
-	desc.RegisterLomsV1Server(s, loms.New(domain.New()))
+	desc.RegisterLomsServer(s, loms.New(domain.New()))
 
 	log.Printf("server listening at %v", lis.Addr())
 

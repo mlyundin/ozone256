@@ -24,12 +24,12 @@ type Client interface {
 }
 
 type client struct {
-	noteClient lomsServiceAPI.LomsV1Client
+	noteClient lomsServiceAPI.LomsClient
 }
 
 func New(cc *grpc.ClientConn) *client {
 	return &client{
-		noteClient: lomsServiceAPI.NewLomsV1Client(cc),
+		noteClient: lomsServiceAPI.NewLomsClient(cc),
 	}
 }
 

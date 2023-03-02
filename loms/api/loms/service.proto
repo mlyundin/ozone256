@@ -2,11 +2,11 @@ syntax = "proto3";
 
 package loms;
 
-option go_package = "gitlab.ozon.dev/mlyundin/Homework/pkg/loms;loms";
+option go_package = "gitlab.ozon.dev/mlyundin/Homework/loms/pkg/loms;loms";
 
 import "google/protobuf/empty.proto";
 
-service LomsV1 {
+service Loms {
 
   rpc Stocks (StocksRequest) returns (StocksResponse);
 

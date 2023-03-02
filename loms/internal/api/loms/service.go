@@ -10,14 +10,14 @@ import (
 )
 
 type Implementation struct {
-	desc.UnimplementedLomsV1Server
+	desc.UnimplementedLomsServer
 
 	domain domain.Model
 }
 
 func New(domain domain.Model) *Implementation {
 	return &Implementation{
-		desc.UnimplementedLomsV1Server{},
+		desc.UnimplementedLomsServer{},
 		domain,
 	}
 }
