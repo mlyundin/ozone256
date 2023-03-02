@@ -3,38 +3,23 @@ package products
 import (
 	"context"
 	"route256/checkout/internal/domain"
-	"route256/libs/httpclient"
+	product "route256/product/pkg/client/grpc/product-service"
 )
 
 type Client struct {
-	url           string
-	urlGetProduct string
-	urlListSkus   string
-	token         string
+	grpcClient product.Client
+	token      string
 }
 
-func New(url string, token string) *Client {
+func New(grpcClient product.Client, token string) *Client {
 	return &Client{
-		url:           url,
-		urlGetProduct: url + "/get_product",
-		urlListSkus:   url + "/get_skus",
-		token:         token,
+		grpcClient,
+		token,
 	}
 }
 
-type GetProductRequest struct {
-	Token string `json:"token"`
-	Sku   uint32 `json:"sku"`
-}
-
-type GetProductResponse struct {
-	Name  string `json:"name"`
-	Price uint32 `json:"price"`
-}
-
 func (c *Client) Product(ctx context.Context, sku uint32) (domain.ProductDesc, error) {
-	response, err := httpclient.Send[GetProductRequest, GetProductResponse](ctx, c.urlGetProduct,
-		GetProductRequest{Token: c.token, Sku: sku})
+	response, err := c.grpcClient.GetProduct(ctx, c.token, sku)
 	if err != nil {
 		return domain.ProductDesc{}, err
 	}
@@ -53,11 +38,5 @@ type GetSkustResponse struct {
 }
 
 func (c *Client) Skus(ctx context.Context, startAfterSku uint32, count uint32) ([]uint32, error) {
-	_, err := httpclient.Send[GetSkusRequest, GetSkustResponse](ctx, c.urlListSkus,
-		GetSkusRequest{Token: c.token, StartAfterSku: startAfterSku, Count: count}) // TODO handle response
-	if err != nil {
-		return nil, err
-	}
-
-	return []uint32{}, nil
+	return c.grpcClient.ListSkus(ctx, c.token, startAfterSku, count)
 }

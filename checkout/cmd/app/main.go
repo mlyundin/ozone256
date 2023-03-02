@@ -13,6 +13,7 @@ import (
 	desc "route256/checkout/pkg/checkout"
 	"route256/libs/interceptors"
 	lomcln "route256/loms/pkg/client/grpc/loms-service"
+	productcln "route256/product/pkg/client/grpc/product-service"
 
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
@@ -28,14 +29,20 @@ func main() {
 		log.Fatal("config init", err)
 	}
 
-	conn, err := grpc.DialContext(context.Background(), config.ConfigData.Services.Loms, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connLoms, err := grpc.DialContext(context.Background(), config.ConfigData.Services.Loms, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect to server: %v", err)
 	}
-	defer conn.Close()
+	defer connLoms.Close()
+	lomsClient := loms.New(lomcln.New(connLoms))
 
-	lomsClient := loms.New(lomcln.New(conn))
-	productClient := products.New(config.ConfigData.Services.Products.Url, config.ConfigData.Services.Products.Token)
+	connProduct, err := grpc.DialContext(context.Background(), config.ConfigData.Services.Products.Url, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("failed to connect to server: %v", err)
+	}
+	defer connProduct.Close()
+	productClient := products.New(productcln.New(connProduct), config.ConfigData.Services.Products.Token)
+
 	domain := domain.New(lomsClient, productClient)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
