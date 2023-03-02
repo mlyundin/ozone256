@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package loms_v1;
+package loms;
 
-option go_package = "gitlab.ozon.dev/mlyundin/Homework/pkg/loms_v1;loms_v1";
+option go_package = "gitlab.ozon.dev/mlyundin/Homework/pkg/loms;loms";
 
 import "google/protobuf/empty.proto";
 

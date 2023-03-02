@@ -3,7 +3,7 @@ package loms_client
 import (
 	"context"
 
-	lomsServiceAPI "route256/loms/pkg/loms_v1"
+	lomsServiceAPI "route256/loms/pkg/loms"
 	"route256/loms/pkg/model"
 
 	"google.golang.org/grpc"

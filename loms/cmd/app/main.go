@@ -10,12 +10,11 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"route256/libs/interceptors"
-	lomsV1 "route256/loms/internal/api/loms_v1"
+	"route256/loms/internal/api/loms"
 	"route256/loms/internal/domain"
-	desc "route256/loms/pkg/loms_v1"
+	desc "route256/loms/pkg/loms"
 )
 
-const port = ":8081"
 const grpcPort = 8081
 
 func main() {
@@ -34,7 +33,7 @@ func main() {
 	)
 
 	reflection.Register(s)
-	desc.RegisterLomsV1Server(s, lomsV1.New(domain.New()))
+	desc.RegisterLomsV1Server(s, loms.New(domain.New()))
 
 	log.Printf("server listening at %v", lis.Addr())
 

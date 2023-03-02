@@ -44,10 +44,10 @@ get-go-deps:
 	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
 generate:
-	mkdir -p pkg/loms_v1
-	protoc -I api/loms_v1 -I ../vendor-proto \
-	--go_out=pkg/loms_v1 --go_opt=paths=source_relative \
+	mkdir -p pkg/loms
+	protoc -I api/loms -I ../vendor-proto \
+	--go_out=pkg/loms --go_opt=paths=source_relative \
 	--plugin=protoc-gen-go=../bin/protoc-gen-go \
-	--go-grpc_out=pkg/loms_v1 --go-grpc_opt=paths=source_relative \
+	--go-grpc_out=pkg/loms --go-grpc_opt=paths=source_relative \
 	--plugin=protoc-gen-go-grpc=../bin/protoc-gen-go-grpc \
-	api/loms_v1/service.proto
+	api/loms/service.proto
