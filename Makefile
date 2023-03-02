@@ -1,5 +1,6 @@
 
 build-all:
+	cd product && GOOS=linux make build
 	cd loms && GOOS=linux make build
 	cd checkout && GOOS=linux make build
 	cd notifications && GOOS=linux make build
