@@ -42,7 +42,7 @@ func (impl *Implementation) ListOrder(ctx context.Context, req *desc.ListOrderRe
 		items = append(items, &desc.Item{Sku: item.Sku, Count: item.Sku})
 	}
 
-	return &desc.ListOrderResponse{Status: order.Status, User: order.User, Items: items}, nil
+	return &desc.ListOrderResponse{Status: desc.OrderStatus(order.Status), User: order.User, Items: items}, nil
 }
 
 func (impl *Implementation) CreateOrder(ctx context.Context, req *desc.CreateOrderRequest) (*desc.CreateOrderResponse, error) {

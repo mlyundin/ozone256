@@ -11,7 +11,7 @@ type Item struct {
 }
 
 type Order struct {
-	Status string
+	Status int32
 	User   int64
 	Items  []*Item
 }

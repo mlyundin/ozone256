@@ -1,7 +1,7 @@
 
 build-all:
-	cd checkout && GOOS=linux make build
 	cd loms && GOOS=linux make build
+	cd checkout && GOOS=linux make build
 	cd notifications && GOOS=linux make build
 
 run-all: build-all
