@@ -2,22 +2,28 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"net/http"
+	"net"
 
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 
+	"route256/libs/interceptors"
+	lomcln "route256/loms/pkg/client/grpc/loms-service"
+
+	"route256/checkout/internal/api/checkout"
 	"route256/checkout/internal/clients/loms"
 	"route256/checkout/internal/clients/products"
 	"route256/checkout/internal/config"
 	"route256/checkout/internal/domain"
-	"route256/checkout/internal/handlers"
-	"route256/libs/srvwrapper"
-	lomcln "route256/loms/pkg/client/grpc/loms-service"
+
+	desc "route256/checkout/pkg/checkout"
 )
 
-const port = ":8080"
+const grpcPort = 8080
 
 func main() {
 	err := config.Init()
@@ -33,15 +39,28 @@ func main() {
 
 	lomsClient := loms.New(lomcln.New(conn))
 	productClient := products.New(config.ConfigData.Services.Products.Url, config.ConfigData.Services.Products.Token)
-	businessLogic := domain.New(lomsClient, productClient)
+	domain := domain.New(lomsClient, productClient)
 
-	handler := handlers.New(businessLogic)
-	http.Handle("/addToCart", srvwrapper.New(handler.AddToCart))
-	http.Handle("/deleteFromCart", srvwrapper.New(handler.DeleteFromCart))
-	http.Handle("/listCart", srvwrapper.New(handler.ListCart))
-	http.Handle("/purchase", srvwrapper.New(handler.Purchase))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
 
-	log.Println("listening http at", port)
-	err = http.ListenAndServe(port, nil)
-	log.Fatal("cannot listen http", err)
+	server := grpc.NewServer(
+		grpc.UnaryInterceptor(
+			grpcMiddleware.ChainUnaryServer(
+				interceptors.LoggingInterceptor,
+			),
+		),
+	)
+
+	reflection.Register(server)
+	desc.RegisterCheckoutServer(server, checkout.New(domain))
+
+	log.Printf("server listening at %v", lis.Addr())
+
+	if err = server.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+
 }

@@ -2,6 +2,11 @@ package domain
 
 import "context"
 
+type Stock struct {
+	WarehouseID int64
+	Count       uint64
+}
+
 type StocksChecker interface {
 	Stocks(ctx context.Context, sku uint32) ([]Stock, error)
 	CreateOrder(ctx context.Context, userID int64) (int64, error)
