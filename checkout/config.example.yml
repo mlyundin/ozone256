@@ -1,5 +1,0 @@
-services:
-  loms: "loms:8081"
-  products:
-    url: "route256.pavl.uk:8082"
-    token: "xxx"    

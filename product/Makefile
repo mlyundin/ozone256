@@ -6,6 +6,9 @@ LINTVER=v1.51.1
 LINTBIN=${BINDIR}/lint_${GOVER}_${LINTVER}
 PACKAGE=route256/product/cmd/app
 
+bindir:
+	mkdir -p ${BINDIR}
+
 all: format build lint
 
 build: generate

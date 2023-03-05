@@ -2,7 +2,6 @@ package loms_client
 
 import (
 	"context"
-
 	productServiceAPI "route256/product/pkg/product"
 
 	"google.golang.org/grpc"

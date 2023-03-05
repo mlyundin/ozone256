@@ -8,7 +8,7 @@ PACKAGE=route256/loms/cmd/app
 
 all: format build test lint
 
-build: bindir generate
+build: bindir generate copyconfig
 	go build -o ${BINDIR}/app ${PACKAGE}
 
 test:
@@ -25,6 +25,9 @@ precommit: format build test lint
 
 bindir:
 	mkdir -p ${BINDIR}
+
+copyconfig:
+	cp ../config.yml .
 
 format: install-smartimports
 	${SMARTIMPORTS} -exclude internal/mocks

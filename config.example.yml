@@ -1,0 +1,12 @@
+services:
+  checkout:
+    host: "checkout"
+    port: "8080"
+  loms:
+    host: "loms"
+    port: "8081" 
+  products:
+    service:
+      host: "route256.pavl.uk"
+      port: "8082" 
+    token: "xxx"    

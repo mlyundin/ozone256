@@ -15,11 +15,10 @@ run-all-w: build-all-w
 	docker compose up --force-recreate --build
 
 precommit:
-	cd notifications && make precommit
+	cd product && make precommit
 	cd loms && make precommit
-	cd notifications && make precommit
 	cd checkout && make precommit
-
+	cd notifications && make precommit
 
 LOCAL_BIN:=$(CURDIR)/bin
 

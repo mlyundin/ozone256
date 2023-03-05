@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net"
+	"route256/libs/config"
 	"route256/libs/interceptors"
 	"route256/loms/internal/api/loms"
 	"route256/loms/internal/domain"
@@ -14,11 +14,13 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-const grpcPort = 8081
-
 func main() {
+	err := config.Init()
+	if err != nil {
+		log.Fatal("config init", err)
+	}
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	lis, err := net.Listen("tcp", ":"+config.ConfigData.Services.Loms.Port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

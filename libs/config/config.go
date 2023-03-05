@@ -1,18 +1,29 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
 
+type service struct {
+	Host string `yaml:"host"`
+	Port string `yaml:"port"`
+}
+
+func (s service) Url() string {
+	return fmt.Sprintf("%s:%s", s.Host, s.Port)
+}
+
 type ConfigStruct struct {
 	Services struct {
-		Loms     string `yaml:"loms"`
+		Checkout service `yaml:"checkout"`
+		Loms     service `yaml:"loms"`
 		Products struct {
-			Token string `yaml:"token"`
-			Url   string `yaml:"url"`
+			Service service `yaml:"service"`
+			Token   string  `yaml:"token"`
 		} `yaml:"products"`
 	} `yaml:"services"`
 }
