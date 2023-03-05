@@ -8,7 +8,7 @@ PACKAGE=route256/checkout/cmd/app
 
 all: format build test lint
 
-build: bindir
+build: bindir generate copyconfig
 	go build -o ${BINDIR}/app ${PACKAGE}
 
 test:
@@ -26,6 +26,9 @@ precommit: format build test lint
 bindir:
 	mkdir -p ${BINDIR}
 
+copyconfig:
+	cp ../config.yml .
+
 format: install-smartimports
 	${SMARTIMPORTS} -exclude internal/mocks
 
@@ -38,3 +41,16 @@ install-smartimports: bindir
 	test -f ${SMARTIMPORTS} || \
 		(GOBIN=${BINDIR} go install github.com/pav5000/smartimports/cmd/smartimports@latest && \
 		mv ${BINDIR}/smartimports ${SMARTIMPORTS})
+
+get-go-deps:
+	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
+	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
+
+generate:
+	mkdir -p pkg/checkout
+	protoc -I api/checkout -I ../vendor-proto \
+	--go_out=pkg/checkout --go_opt=paths=source_relative \
+	--plugin=protoc-gen-go=../bin/protoc-gen-go \
+	--go-grpc_out=pkg/checkout --go-grpc_opt=paths=source_relative \
+	--plugin=protoc-gen-go-grpc=../bin/protoc-gen-go-grpc \
+	api/checkout/checkout_service.proto

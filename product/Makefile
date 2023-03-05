@@ -4,30 +4,20 @@ GOVER=$(shell go version | perl -nle '/(go\d\S+)/; print $$1;')
 SMARTIMPORTS=${BINDIR}/smartimports_${GOVER}
 LINTVER=v1.51.1
 LINTBIN=${BINDIR}/lint_${GOVER}_${LINTVER}
-PACKAGE=route256/loms/cmd/app
-
-all: format build test lint
-
-build: bindir generate copyconfig
-	go build -o ${BINDIR}/app ${PACKAGE}
-
-test:
-	go test ./...
-
-run:
-	go run ${PACKAGE}
-
-lint: install-lint
-	${LINTBIN} run
-
-precommit: format build test lint
-	echo "OK"
+PACKAGE=route256/product/cmd/app
 
 bindir:
 	mkdir -p ${BINDIR}
 
-copyconfig:
-	cp ../config.yml .
+all: format build lint
+
+build: generate
+
+lint: install-lint
+	${LINTBIN} run
+
+precommit: format build lint
+	echo "OK"
 
 format: install-smartimports
 	${SMARTIMPORTS} -exclude internal/mocks
@@ -42,15 +32,11 @@ install-smartimports: bindir
 		(GOBIN=${BINDIR} go install github.com/pav5000/smartimports/cmd/smartimports@latest && \
 		mv ${BINDIR}/smartimports ${SMARTIMPORTS})
 
-get-go-deps:
-	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
-	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
-
 generate:
-	mkdir -p pkg/loms
-	protoc -I api/loms -I ../vendor-proto \
-	--go_out=pkg/loms --go_opt=paths=source_relative \
+	mkdir -p pkg/product
+	protoc -I api/product -I ../vendor-proto \
+	--go_out=pkg/product --go_opt=paths=source_relative \
 	--plugin=protoc-gen-go=../bin/protoc-gen-go \
-	--go-grpc_out=pkg/loms --go-grpc_opt=paths=source_relative \
+	--go-grpc_out=pkg/product --go-grpc_opt=paths=source_relative \
 	--plugin=protoc-gen-go-grpc=../bin/protoc-gen-go-grpc \
-	api/loms/loms_service.proto
+	api/product/product_service.proto
