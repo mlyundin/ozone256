@@ -22,8 +22,8 @@ type ConfigStruct struct {
 		Checkout service `yaml:"checkout"`
 		Loms     service `yaml:"loms"`
 		Products struct {
-			Service service `yaml:"service"`
-			Token   string  `yaml:"token"`
+			service `yaml:",inline"`
+			Token   string `yaml:"token"`
 		} `yaml:"products"`
 	} `yaml:"services"`
 }

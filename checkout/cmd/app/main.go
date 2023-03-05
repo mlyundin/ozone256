@@ -34,7 +34,7 @@ func main() {
 	defer connLoms.Close()
 	lomsClient := loms.New(lomcln.New(connLoms))
 
-	connProduct, err := grpc.DialContext(context.Background(), config.ConfigData.Services.Products.Service.Url(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connProduct, err := grpc.DialContext(context.Background(), config.ConfigData.Services.Products.Url(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect to server: %v", err)
 	}
