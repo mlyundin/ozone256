@@ -15,3 +15,29 @@ services:
   #   build: ./notification
   #   ports:
   #     - "8082:8082"
+
+  postgres-loms:
+    image: postgres:15.1
+    environment:
+      POSTGRES_DB: loms
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./loms/pgdata:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    restart: always
+
+  postgres-checkout:
+    image: postgres:15.1
+    environment:
+      POSTGRES_DB: checkout
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./checkout/pgdata:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
+    restart: always
