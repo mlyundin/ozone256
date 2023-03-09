@@ -7,6 +7,14 @@ import (
 
 var _ Model = (*domainmodel)(nil)
 
+type TransactionManager interface {
+	RunRepeteableRead(ctx context.Context, f func(ctxTX context.Context) error) error
+}
+
+type LomsRepository interface {
+	Stocks(ctx context.Context, sku uint32) ([]*model.StockItem, error)
+}
+
 type Model interface {
 	Stocks(ctx context.Context, sku uint32) ([]*model.StockItem, error)
 
@@ -20,8 +28,10 @@ type Model interface {
 }
 
 type domainmodel struct {
+	lomsRepo LomsRepository
+	tm       TransactionManager
 }
 
-func New() *domainmodel {
-	return &domainmodel{}
+func New(lomsRepo LomsRepository, tm TransactionManager) *domainmodel {
+	return &domainmodel{lomsRepo, tm}
 }

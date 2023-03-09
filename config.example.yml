@@ -9,3 +9,17 @@ services:
     host: "route256.pavl.uk"
     port: "8082" 
     token: "xxx"    
+
+databases:
+  checkout:
+    host: "postgres-checkout"
+    port: "5432"
+    user: "user"
+    pass: "xxx"
+    db_name: "checkout"
+  loms:
+    host: "postgres-loms"
+    port: "5432" 
+    user: "user"
+    pass: "xxx"
+    db_name: "loms"

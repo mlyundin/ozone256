@@ -1,5 +1,15 @@
 package model
 
+type OrderStatus int32
+
+const (
+	New OrderStatus = iota
+	AwaitingPayment
+	Falied
+	Payed
+	Cancelled
+)
+
 type StockItem struct {
 	WarehouseID int64
 	Count       uint64
@@ -11,7 +21,7 @@ type Item struct {
 }
 
 type Order struct {
-	Status int32
+	Status OrderStatus
 	User   int64
 	Items  []*Item
 }
