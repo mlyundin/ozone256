@@ -2,8 +2,7 @@ package domain
 
 import (
 	"context"
-
-	"github.com/pkg/errors"
+	"log"
 )
 
 type ProductDesc struct {
@@ -22,29 +21,26 @@ type Cart struct {
 	Total uint32
 }
 
-func (m *Model) ListCart(ctx context.Context, user int64) (Cart, error) {
-	cartSkus := []uint32{1076963,
-		1148162,
-		1625903,
-		2618151,
-		2956315,
-		2958025,
-		3596599,
-		3618852,
-		4288068,
-		4465995} // TODO temp
+func (m *Model) ListCart(ctx context.Context, user int64) (*Cart, error) {
+	cart, err := m.cartHandler.ListCart(ctx, user)
+	if err != nil {
+		return nil, err
+	}
 
-	var cart Cart
-
-	for _, sku := range cartSkus {
-		desk, err := m.productChecker.Product(ctx, sku)
+	var total uint32
+	for i, item := range cart.Items {
+		desc, err := m.productChecker.Product(ctx, item.Sku)
 		if err != nil {
-			return cart, errors.Wrap(err, "Getting product desctription")
+			log.Printf("Could not get description fot sku(%d)", item.Sku)
+			continue
 		}
 
-		cart.Items = append(cart.Items, Product{Sku: sku, Count: 1, ProductDesc: desk})
-		cart.Total += desk.Price
+		cart.Items[i].Name = desc.Name
+		cart.Items[i].Price = desc.Price
+
+		total += desc.Price * uint32(item.Count)
 	}
+	cart.Total = total
 
 	return cart, nil
 }

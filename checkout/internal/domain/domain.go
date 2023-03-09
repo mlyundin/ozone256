@@ -23,14 +23,23 @@ type ProductChecker interface {
 	Skus(ctx context.Context, startAfterSku uint32, count uint32) ([]uint32, error)
 }
 
+type CartHandler interface {
+	AddToCart(ctx context.Context, item *CartItem) error
+	DeleteFromCart(ctx context.Context, item *CartItem) error
+	GetItemCount(ctx context.Context, userId int64, sku uint32) (uint16, error)
+	ListCart(ctx context.Context, userId int64) (*Cart, error)
+}
+
 type Model struct {
 	stocksChecker  StocksChecker
 	productChecker ProductChecker
+	cartHandler    CartHandler
 }
 
-func New(stocksChecker StocksChecker, productChecker ProductChecker) *Model {
+func New(stocksChecker StocksChecker, productChecker ProductChecker, cartHandler CartHandler) *Model {
 	return &Model{
 		stocksChecker:  stocksChecker,
 		productChecker: productChecker,
+		cartHandler:    cartHandler,
 	}
 }

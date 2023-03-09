@@ -20,6 +20,10 @@ type TransactionManager struct {
 	pool *pgxpool.Pool
 }
 
+func New(pool *pgxpool.Pool) *TransactionManager {
+	return &TransactionManager{pool}
+}
+
 type txkey string
 
 const key = txkey("tx")

@@ -8,9 +8,11 @@ import (
 	"route256/checkout/internal/clients/loms"
 	"route256/checkout/internal/clients/products"
 	"route256/checkout/internal/domain"
+	"route256/checkout/internal/repository/postgress"
 	desc "route256/checkout/pkg/checkout"
 	"route256/libs/config"
 	"route256/libs/interceptors"
+	"route256/libs/postgress/transactor"
 	lomcln "route256/loms/pkg/client/grpc/loms-service"
 	productcln "route256/product/pkg/client/grpc/product-service"
 	"time"
@@ -43,43 +45,46 @@ func main() {
 	defer connProduct.Close()
 	productClient := products.New(productcln.New(connProduct), config.ConfigData.Services.Products.Token)
 
-	domain := domain.New(lomsClient, productClient)
-
-	lis, err := net.Listen("tcp", ":"+config.ConfigData.Services.Checkout.Port)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
-	server := grpc.NewServer(
-		grpc.UnaryInterceptor(
-			grpcMiddleware.ChainUnaryServer(
-				interceptors.LoggingInterceptor,
-			),
-		),
-	)
-
 	ctx := context.Background()
 	pool, err := pgxpool.Connect(ctx, config.ConfigData.Databases.Checkout.Connection())
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer pool.Close()
+	{
+		config := pool.Config()
+		config.MaxConnIdleTime = time.Minute
+		config.MaxConnLifetime = time.Hour
+		config.MinConns = 2
+		config.MaxConns = 10
 
-	config := pool.Config()
-	config.MaxConnIdleTime = time.Minute
-	config.MaxConnLifetime = time.Hour
-	config.MinConns = 2
-	config.MaxConns = 10
-
-	if err := pool.Ping(ctx); err != nil {
-		log.Fatal(err)
+		if err := pool.Ping(ctx); err != nil {
+			log.Fatal(err)
+		}
 	}
+	cartHandler := respository.New(transactor.New(pool))
 
-	reflection.Register(server)
-	desc.RegisterCheckoutServer(server, checkout.New(domain))
+	{
+		lis, err := net.Listen("tcp", ":"+config.ConfigData.Services.Checkout.Port)
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
 
-	log.Printf("server listening at %v", lis.Addr())
-	if err = server.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		server := grpc.NewServer(
+			grpc.UnaryInterceptor(
+				grpcMiddleware.ChainUnaryServer(
+					interceptors.LoggingInterceptor,
+				),
+			),
+		)
+		reflection.Register(server)
+
+		domain := domain.New(lomsClient, productClient, cartHandler)
+		desc.RegisterCheckoutServer(server, checkout.New(domain))
+
+		log.Printf("server listening at %v", lis.Addr())
+		if err = server.Serve(lis); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
 	}
 }
