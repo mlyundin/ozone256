@@ -24,7 +24,8 @@ func New(domain *domain.Model) *implementation {
 }
 
 func (impl *implementation) AddToCart(ctx context.Context, req *desc.AddToCartRequest) (*emptypb.Empty, error) {
-	err := impl.domain.AddToCart(ctx, req.GetUser(), req.GetCount(), uint16(req.GetCount()))
+	err := impl.domain.AddToCart(ctx, &domain.CartItem{User: req.GetUser(),
+		Sku: req.GetCount(), Count: uint16(req.GetCount())})
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +33,8 @@ func (impl *implementation) AddToCart(ctx context.Context, req *desc.AddToCartRe
 }
 
 func (impl *implementation) DeleteFromCart(ctx context.Context, req *desc.DeleteFromCartRequest) (*emptypb.Empty, error) {
-	err := impl.domain.DeleteFromCart(ctx, req.GetUser(), req.GetCount(), uint16(req.GetCount()))
+	err := impl.domain.DeleteFromCart(ctx, &domain.CartItem{User: req.GetUser(),
+		Sku: req.GetCount(), Count: uint16(req.GetCount())})
 
 	if err != nil {
 		return nil, err

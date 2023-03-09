@@ -54,3 +54,7 @@ generate:
 	--go-grpc_out=pkg/checkout --go-grpc_opt=paths=source_relative \
 	--plugin=protoc-gen-go-grpc=../bin/protoc-gen-go-grpc \
 	api/checkout/checkout_service.proto
+
+migration:
+	goose -dir ./migrations postgres "postgres://user:password@localhost:5433/checkout?sslmode=disable" status
+	goose -dir ./migrations postgres "postgres://user:password@localhost:5433/checkout?sslmode=disable" up

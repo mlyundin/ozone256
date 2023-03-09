@@ -40,3 +40,7 @@ vendor-proto:
 			mv vendor-proto/protobuf/src/google/protobuf/*.proto vendor-proto/google/protobuf &&\
 			rm -rf vendor-proto/protobuf ;\
 		fi
+
+migration-all:
+	cd loms && make migration
+	cd checkout && make migration

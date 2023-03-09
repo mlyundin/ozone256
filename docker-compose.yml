@@ -1,21 +1,5 @@
 version: "3.1"
 services:
-  checkout:
-    image: checkout
-    build: ./checkout/
-    ports:
-      - "8080:8080"
-  loms:
-    image: loms
-    build: ./loms/
-    ports:
-      - "8081:8081"
-  # notification:
-  #   image: notification
-  #   build: ./notification
-  #   ports:
-  #     - "8082:8082"
-
   postgres-loms:
     image: postgres:15.1
     environment:
@@ -28,6 +12,13 @@ services:
     ports:
       - 5432:5432
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d loms"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - net
 
   postgres-checkout:
     image: postgres:15.1
@@ -41,3 +32,40 @@ services:
     ports:
       - 5433:5432
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d checkout"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - net
+
+  checkout:
+    image: checkout
+    build: ./checkout/
+    ports:
+      - "8080:8080"
+    depends_on: 
+      postgres-checkout:
+        condition: service_healthy
+    networks:
+      - net
+  loms:
+    image: loms
+    build: ./loms/
+    ports:
+      - "8081:8081"
+    depends_on: 
+      postgres-loms:
+        condition: service_healthy
+    networks:
+      - net
+  # notification:
+  #   image: notification
+  #   build: ./notification
+  #   ports:
+  #     - "8082:8082"
+
+networks:
+  net:
+    driver: bridge
