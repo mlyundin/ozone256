@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	//"fmt"
-
 	"route256/libs/postgress/transactor"
 
 	sq "github.com/Masterminds/squirrel"
@@ -58,7 +56,7 @@ func (r *CartRepo) AddToCart(ctx context.Context, item *domain.CartItem) error {
 }
 
 var (
-	ErrNothingToDelete = errors.New("insufficient count")
+	ErrInsufficientCount = errors.New("insufficient count")
 )
 
 func (r *CartRepo) DeleteFromCart(ctx context.Context, item *domain.CartItem) error {
@@ -87,7 +85,7 @@ func (r *CartRepo) DeleteFromCart(ctx context.Context, item *domain.CartItem) er
 	}
 
 	// TODO how to split no data case and count constrain violation case
-	return ErrNothingToDelete
+	return ErrInsufficientCount
 }
 
 func (r *CartRepo) GetItemCount(ctx context.Context, userId int64, sku uint32) (uint16, error) {

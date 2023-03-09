@@ -3,11 +3,11 @@ package model
 type OrderStatus int32
 
 const (
-	New OrderStatus = iota
-	AwaitingPayment
-	Falied
-	Payed
-	Cancelled
+	StatusNew OrderStatus = iota
+	StatusAwaitingPayment
+	StatusFalied
+	StatusPayed
+	StatusCancelled
 )
 
 type StockItem struct {

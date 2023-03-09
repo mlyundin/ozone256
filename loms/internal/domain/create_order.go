@@ -6,5 +6,10 @@ import (
 )
 
 func (s *domainmodel) CreateOrder(ctx context.Context, user int64, items []*model.Item) (int64, error) {
-	return 1, nil
+	orderId, err := s.lomsRepo.NewOrder(ctx, user)
+	if err != nil {
+		return orderId, err
+	}
+
+	return orderId, nil
 }

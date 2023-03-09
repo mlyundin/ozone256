@@ -7,12 +7,22 @@ import (
 
 var _ Model = (*domainmodel)(nil)
 
+type Reservation struct {
+	OrderId     int64
+	WarehouseID int64
+	Sku         uint32
+	Count       uint16
+}
+
 type TransactionManager interface {
 	RunRepeteableRead(ctx context.Context, f func(ctxTX context.Context) error) error
 }
 
 type LomsRepository interface {
 	Stocks(ctx context.Context, sku uint32) ([]*model.StockItem, error)
+	ReserveStock(ctx context.Context, sku uint32, item *model.StockItem) error
+	AddStock(ctx context.Context, sku uint32, item *model.StockItem) error
+	NewOrder(ctx context.Context, user int64) (int64, error)
 }
 
 type Model interface {
