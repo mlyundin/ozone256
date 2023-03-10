@@ -3,7 +3,7 @@ package model
 type OrderStatus int32
 
 const (
-	StatusNew OrderStatus = iota
+	StatusNew OrderStatus = iota + 1
 	StatusAwaitingPayment
 	StatusFalied
 	StatusPayed

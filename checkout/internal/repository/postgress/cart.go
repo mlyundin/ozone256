@@ -4,14 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
+	"route256/checkout/internal/domain"
+	"route256/checkout/internal/repository/schema"
 	"route256/libs/postgress/transactor"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
-
-	"route256/checkout/internal/domain"
-	"route256/checkout/internal/repository/schema"
 )
 
 type CartRepo struct {

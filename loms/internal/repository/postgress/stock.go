@@ -3,13 +3,12 @@ package respository
 import (
 	"context"
 	"errors"
-
-	sq "github.com/Masterminds/squirrel"
-	"github.com/georgysavva/scany/pgxscan"
-
 	"route256/loms/internal/domain"
 	"route256/loms/internal/repository/schema"
 	"route256/loms/pkg/model"
+
+	sq "github.com/Masterminds/squirrel"
+	"github.com/georgysavva/scany/pgxscan"
 )
 
 var (

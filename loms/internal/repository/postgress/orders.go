@@ -3,7 +3,6 @@ package respository
 import (
 	"context"
 	"errors"
-
 	"route256/loms/internal/repository/schema"
 	"route256/loms/pkg/model"
 
@@ -90,7 +89,7 @@ func (r *LomsRepo) GetOrder(ctx context.Context, orderId int64) (*model.Order, e
 	db := r.QueryEngineProvider.GetQueryEngine(ctx)
 
 	sql, args, err := sq.Select("order_id", "status", "user_id").
-		From(stockTable).
+		From(ordersTable).
 		Where(sq.Eq{"order_id": orderId}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
