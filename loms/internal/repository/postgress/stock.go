@@ -7,6 +7,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
 
+	"route256/loms/internal/domain"
 	"route256/loms/internal/repository/schema"
 	"route256/loms/pkg/model"
 )
@@ -48,13 +49,13 @@ var (
 	ErrUnknownStock      = errors.New("unknow stock")
 )
 
-func (r *LomsRepo) ReserveStock(ctx context.Context, sku uint32, item *model.StockItem) error {
+func (r *LomsRepo) Reserve(ctx context.Context, reservation *domain.Reservation) error {
 	db := r.QueryEngineProvider.GetQueryEngine(ctx)
 
 	sql, args, err := sq.Update(stockTable).
-		Where(sq.Eq{"sku": sku}).
-		Where(sq.Eq{"warehouse_id": item.WarehouseID}).
-		Set("count", sq.Expr("count - ?", item.Count)).
+		Where(sq.Eq{"sku": reservation.Sku}).
+		Where(sq.Eq{"warehouse_id": reservation.WarehouseID}).
+		Set("count", sq.Expr("count - ?", reservation.Count)).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING count").
 		ToSql()
@@ -76,13 +77,13 @@ func (r *LomsRepo) ReserveStock(ctx context.Context, sku uint32, item *model.Sto
 	return ErrInsufficientCount
 }
 
-func (r *LomsRepo) AddStock(ctx context.Context, sku uint32, item *model.StockItem) error {
+func (r *LomsRepo) Release(ctx context.Context, reservation *domain.Reservation) error {
 	db := r.QueryEngineProvider.GetQueryEngine(ctx)
 
 	sql, args, err := sq.Update(stockTable).
-		Where(sq.Eq{"sku": sku}).
-		Where(sq.Eq{"warehouse_id": item.WarehouseID}).
-		Set("count", sq.Expr("count + ?", item.Count)).
+		Where(sq.Eq{"sku": reservation.Sku}).
+		Where(sq.Eq{"warehouse_id": reservation.WarehouseID}).
+		Set("count", sq.Expr("count + ?", reservation.Count)).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING count").
 		ToSql()

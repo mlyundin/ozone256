@@ -20,9 +20,16 @@ type TransactionManager interface {
 
 type LomsRepository interface {
 	Stocks(ctx context.Context, sku uint32) ([]*model.StockItem, error)
-	ReserveStock(ctx context.Context, sku uint32, item *model.StockItem) error
-	AddStock(ctx context.Context, sku uint32, item *model.StockItem) error
+	Reserve(ctx context.Context, reservation *Reservation) error
+	Release(ctx context.Context, reservation *Reservation) error
+
 	NewOrder(ctx context.Context, user int64) (int64, error)
+	UpdateStatus(ctx context.Context, orderId int64, newStatus model.OrderStatus, currStatus model.OrderStatus) error
+	GetOrder(ctx context.Context, orderId int64) (*model.Order, error)
+
+	NewReservation(ctx context.Context, reservation *Reservation) error
+	ReleaseAllReservations(ctx context.Context, orderId int64) error
+	GetReservations(ctx context.Context, orderId int64) ([]*Reservation, error)
 }
 
 type Model interface {

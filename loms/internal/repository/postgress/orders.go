@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors"
 
-	sq "github.com/Masterminds/squirrel"
+	"route256/loms/internal/repository/schema"
 	"route256/loms/pkg/model"
+
+	sq "github.com/Masterminds/squirrel"
+	"github.com/georgysavva/scany/pgxscan"
 )
 
 var (
@@ -19,6 +22,7 @@ const (
 var (
 	ErrUnknownOrderId   = errors.New("unknow order id")
 	ErrStatusUpdateFail = errors.New("status update fails")
+	ErrOrderNotFound    = errors.New("order not found")
 )
 
 func (r *LomsRepo) NewOrder(ctx context.Context, user int64) (int64, error) {
@@ -80,4 +84,29 @@ func (r *LomsRepo) UpdateStatus(ctx context.Context, orderId int64, newStatus mo
 	}
 
 	return ErrStatusUpdateFail
+}
+
+func (r *LomsRepo) GetOrder(ctx context.Context, orderId int64) (*model.Order, error) {
+	db := r.QueryEngineProvider.GetQueryEngine(ctx)
+
+	sql, args, err := sq.Select("order_id", "status", "user_id").
+		From(stockTable).
+		Where(sq.Eq{"order_id": orderId}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var items []schema.Order
+	if err := pgxscan.Select(ctx, db, &items, sql, args...); err != nil {
+		return nil, err
+	}
+
+	if len(items) == 0 {
+		return nil, ErrOrderNotFound
+	}
+
+	return &model.Order{Status: model.OrderStatus(items[0].Status), User: items[0].UserId}, nil
 }

@@ -6,5 +6,5 @@ import (
 )
 
 func (s *domainmodel) Stocks(ctx context.Context, sku uint32) ([]*model.StockItem, error) {
-	return s.Stocks(ctx, sku)
+	return s.lomsRepo.Stocks(ctx, sku)
 }
