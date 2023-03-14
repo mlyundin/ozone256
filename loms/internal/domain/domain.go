@@ -44,11 +44,16 @@ type Model interface {
 	OrderPayed(ctx context.Context, orderId int64) error
 }
 
-type domainmodel struct {
-	lomsRepo LomsRepository
-	tm       TransactionManager
+type NewOrderQueue interface {
+	Add(orderId int64)
 }
 
-func New(lomsRepo LomsRepository, tm TransactionManager) *domainmodel {
-	return &domainmodel{lomsRepo, tm}
+type domainmodel struct {
+	lomsRepo      LomsRepository
+	tm            TransactionManager
+	newOrderQueue NewOrderQueue
+}
+
+func New(lomsRepo LomsRepository, tm TransactionManager, newOrderQueue NewOrderQueue) *domainmodel {
+	return &domainmodel{lomsRepo, tm, newOrderQueue}
 }

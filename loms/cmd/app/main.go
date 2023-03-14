@@ -2,14 +2,18 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 	"route256/libs/config"
 	"route256/libs/interceptors"
 	"route256/libs/postgress/transactor"
 	"route256/loms/internal/api/loms"
 	"route256/loms/internal/domain"
 	"route256/loms/internal/repository/postgress"
+	"route256/loms/internal/utils"
 	desc "route256/loms/pkg/loms"
 	"time"
 
@@ -25,7 +29,9 @@ func main() {
 		log.Fatal("config init", err)
 	}
 
-	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
 	pool, err := pgxpool.Connect(ctx, config.ConfigData.Databases.Loms.Connection())
 	if err != nil {
 		log.Fatal(err)
@@ -60,8 +66,35 @@ func main() {
 			),
 		)
 
+		newOrderQueue := utils.NewTimeQueue[int64]()
+		dmn := domain.New(stockHandler, tr, newOrderQueue)
 		reflection.Register(s)
-		desc.RegisterLomsServer(s, loms.New(domain.New(stockHandler, tr)))
+		desc.RegisterLomsServer(s, loms.New(dmn))
+
+		{
+			ticker := time.NewTicker(time.Second * 1)
+
+			go func() {
+				for {
+					select {
+					case <-ticker.C:
+						for _, orderID := range newOrderQueue.Before(time.Now().Add(time.Duration(-5) * time.Second)) {
+							err := dmn.CancelOrder(ctx, orderID)
+							if err != nil {
+								log.Println(err)
+							} else {
+								log.Printf("Order %d has been canceled", orderID)
+							}
+						}
+
+					case <-ctx.Done():
+						fmt.Println("Goodbye!")
+						return
+					}
+				}
+			}()
+
+		}
 
 		log.Printf("server listening at %v", lis.Addr())
 

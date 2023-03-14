@@ -69,5 +69,7 @@ func (dm *domainmodel) CreateOrder(ctx context.Context, user int64, items []*mod
 		}
 	}
 
+	dm.newOrderQueue.Add(orderId)
+
 	return orderId, nil
 }
