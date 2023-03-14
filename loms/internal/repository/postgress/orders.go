@@ -5,13 +5,14 @@ import (
 	"errors"
 	"route256/loms/internal/repository/schema"
 	"route256/loms/pkg/model"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
 )
 
 var (
-	ordersColumns = []string{"status", "user_id"}
+	ordersColumns = []string{"status", "user_id", "creation_time"}
 )
 
 const (
@@ -29,7 +30,7 @@ func (r *LomsRepo) NewOrder(ctx context.Context, user int64) (int64, error) {
 
 	sql, args, err := sq.Insert(ordersTable).
 		Columns(ordersColumns...).
-		Values(model.StatusNew, user).
+		Values(model.StatusNew, user, time.Now().Unix()).
 		Suffix("RETURNING order_id").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
