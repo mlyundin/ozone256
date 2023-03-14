@@ -13,7 +13,6 @@ import (
 	"route256/loms/internal/api/loms"
 	"route256/loms/internal/domain"
 	"route256/loms/internal/repository/postgress"
-	"route256/loms/internal/utils"
 	desc "route256/loms/pkg/loms"
 	"time"
 
@@ -65,25 +64,26 @@ func main() {
 				),
 			),
 		)
-
-		newOrderQueue := utils.NewTimeQueue[int64]()
-		dmn := domain.New(stockHandler, tr, newOrderQueue)
 		reflection.Register(s)
+
+		dmn := domain.New(stockHandler, tr)
 		desc.RegisterLomsServer(s, loms.New(dmn))
 
 		{
-			ticker := time.NewTicker(time.Second * 1)
+			ticker := time.NewTicker(time.Minute * 1)
 
 			go func() {
 				for {
 					select {
 					case <-ticker.C:
-						for _, orderID := range newOrderQueue.Before(time.Now().Add(time.Duration(-5) * time.Second)) {
-							err := dmn.CancelOrder(ctx, orderID)
-							if err != nil {
-								log.Println(err)
-							} else {
-								log.Printf("Order %d has been canceled", orderID)
+						orders, err := dmn.CancelUnpayedOrders(ctx, time.Now().Add(time.Duration(-10)*time.Minute))
+						if err != nil {
+							log.Printf("Falied to cancel updayed orders due to %v \n", err)
+						} else if len(orders) == 0 {
+							log.Println("Nothing to cancel")
+						} else {
+							for _, orderId := range orders {
+								log.Printf("Order %d has been canceled\n", orderId)
 							}
 						}
 

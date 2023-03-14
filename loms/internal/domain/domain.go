@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"route256/loms/pkg/model"
+	"time"
 )
 
 var _ Model = (*domainmodel)(nil)
@@ -25,6 +26,7 @@ type LomsRepository interface {
 
 	NewOrder(ctx context.Context, user int64) (int64, error)
 	UpdateStatus(ctx context.Context, orderId int64, newStatus model.OrderStatus, currStatus model.OrderStatus) error
+	UpdateStatusBefore(ctx context.Context, beforeTimestamp int64, newStatus model.OrderStatus, currStatus model.OrderStatus) ([]int64, error)
 	GetOrder(ctx context.Context, orderId int64) (*model.Order, error)
 
 	NewReservation(ctx context.Context, reservation *Reservation) error
@@ -42,6 +44,8 @@ type Model interface {
 	CancelOrder(ctx context.Context, orderId int64) error
 
 	OrderPayed(ctx context.Context, orderId int64) error
+
+	CancelUnpayedOrders(ctx context.Context, beforeTimestamp time.Time) ([]int64, error)
 }
 
 type NewOrderQueue interface {
@@ -49,11 +53,10 @@ type NewOrderQueue interface {
 }
 
 type domainmodel struct {
-	lomsRepo      LomsRepository
-	tm            TransactionManager
-	newOrderQueue NewOrderQueue
+	lomsRepo LomsRepository
+	tm       TransactionManager
 }
 
-func New(lomsRepo LomsRepository, tm TransactionManager, newOrderQueue NewOrderQueue) *domainmodel {
-	return &domainmodel{lomsRepo, tm, newOrderQueue}
+func New(lomsRepo LomsRepository, tm TransactionManager) *domainmodel {
+	return &domainmodel{lomsRepo, tm}
 }
