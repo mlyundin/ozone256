@@ -54,3 +54,7 @@ generate:
 	--go-grpc_out=pkg/loms --go-grpc_opt=paths=source_relative \
 	--plugin=protoc-gen-go-grpc=../bin/protoc-gen-go-grpc \
 	api/loms/loms_service.proto
+
+migration:
+	goose -dir ./migrations postgres "postgres://user:password@localhost:5432/loms?sslmode=disable" status
+	goose -dir ./migrations postgres "postgres://user:password@localhost:5432/loms?sslmode=disable" up

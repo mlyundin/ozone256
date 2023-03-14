@@ -39,7 +39,7 @@ func (impl *Implementation) ListOrder(ctx context.Context, req *desc.ListOrderRe
 
 	items := make([]*desc.Item, 0, len(order.Items))
 	for _, item := range order.Items {
-		items = append(items, &desc.Item{Sku: item.Sku, Count: item.Sku})
+		items = append(items, &desc.Item{Sku: item.Sku, Count: uint32(item.Count)})
 	}
 
 	return &desc.ListOrderResponse{Status: desc.OrderStatus(order.Status), User: order.User, Items: items}, nil

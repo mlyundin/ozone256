@@ -72,7 +72,7 @@ func (c *client) ListOrder(ctx context.Context, orderId int64) (*model.Order, er
 	for _, item := range resItems {
 		items = append(items, &model.Item{Sku: item.GetSku(), Count: uint16(item.GetCount())})
 	}
-	return &model.Order{Status: int32(res.GetStatus()), User: res.GetUser(), Items: items}, nil
+	return &model.Order{Status: model.OrderStatus(res.GetStatus()), User: res.GetUser(), Items: items}, nil
 }
 
 func (c *client) CancelOrder(ctx context.Context, orderId int64) error {

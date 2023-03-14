@@ -13,6 +13,18 @@ type service struct {
 	Port string `yaml:"port"`
 }
 
+type database struct {
+	Host   string `yaml:"host"`
+	Port   string `yaml:"port"`
+	User   string `yaml:"user"`
+	Pass   string `yaml:"pass"`
+	DBName string `yaml:"db_name"`
+}
+
+func (db database) Connection() string {
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", db.Host, db.Port, db.User, db.Pass, db.DBName)
+}
+
 func (s service) Url() string {
 	return fmt.Sprintf("%s:%s", s.Host, s.Port)
 }
@@ -22,10 +34,15 @@ type ConfigStruct struct {
 		Checkout service `yaml:"checkout"`
 		Loms     service `yaml:"loms"`
 		Products struct {
-			Service service `yaml:"service"`
-			Token   string  `yaml:"token"`
+			service `yaml:",inline"`
+			Token   string `yaml:"token"`
 		} `yaml:"products"`
 	} `yaml:"services"`
+
+	Databases struct {
+		Checkout database `yaml:"checkout"`
+		Loms     database `yaml:"loms"`
+	} `yaml:"databases"`
 }
 
 var ConfigData ConfigStruct

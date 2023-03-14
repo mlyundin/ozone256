@@ -6,5 +6,27 @@ import (
 )
 
 func (s *domainmodel) ListOrder(ctx context.Context, orderId int64) (*model.Order, error) {
-	return &model.Order{Status: 3, User: 3, Items: []*model.Item{{Sku: 3, Count: 4}, {Sku: 5, Count: 100}}}, nil
+
+	order, err := s.lomsRepo.GetOrder(ctx, orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	items, err := s.lomsRepo.GetReservations(ctx, orderId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	temp := make(map[uint32]uint16)
+	for _, item := range items {
+		temp[item.Sku] += item.Count
+	}
+	orderItems := make([]*model.Item, 0, len(temp))
+
+	for sku, count := range temp {
+		orderItems = append(orderItems, &model.Item{Sku: sku, Count: count})
+	}
+
+	return &model.Order{Status: order.Status, User: order.User, Items: orderItems}, nil
 }
