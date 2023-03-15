@@ -8,7 +8,10 @@ import (
 type ProductDesc struct {
 	Name  string
 	Price uint32
+	Err   error
 }
+
+type ProductsDesc = map[uint32]ProductDesc
 
 type Product struct {
 	Sku   uint32
@@ -27,10 +30,17 @@ func (m *Model) ListCart(ctx context.Context, user int64) (*Cart, error) {
 		return nil, err
 	}
 
+	skus := make([]uint32, 0, len(cart.Items))
+	for _, item := range cart.Items {
+		skus = append(skus, item.Sku)
+	}
+
+	productsDesc := m.productChecker.Products(ctx, skus)
+
 	var total uint32
 	for i, item := range cart.Items {
-		desc, err := m.productChecker.Product(ctx, item.Sku)
-		if err != nil {
+		desc := productsDesc[item.Sku]
+		if desc.Err != nil {
 			log.Printf("Could not get description fot sku(%d)", item.Sku)
 			continue
 		}

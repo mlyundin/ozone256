@@ -2,6 +2,7 @@ package loms_client
 
 import (
 	"context"
+	"route256/libs/workerpool"
 	productServiceAPI "route256/product/pkg/product"
 
 	"google.golang.org/grpc"
@@ -16,6 +17,7 @@ type Product struct {
 
 type Client interface {
 	GetProduct(ctx context.Context, token string, sku uint32) (*Product, error)
+	GetProducts(ctx context.Context, token string, skus []uint32) map[uint32]ProductRes
 	ListSkus(ctx context.Context, token string, startAfterSkuu uint32, count uint32) ([]uint32, error)
 }
 
@@ -38,8 +40,39 @@ func (c *client) GetProduct(ctx context.Context, token string, sku uint32) (*Pro
 	return &Product{Name: res.Name, Price: res.Price}, nil
 }
 
-func (c *client) ListSkus(ctx context.Context, token string, startAfterSku uint32, count uint32) ([]uint32, error) {
+type ProductRes struct {
+	Product *Product
+	Err     error
+}
 
+type productreswithsku struct {
+	ProductRes
+	sku uint32
+}
+
+func (c *client) GetProducts(ctx context.Context, token string, skus []uint32) map[uint32]ProductRes {
+	n := len(skus)
+	wp := workerpool.New[uint32, productreswithsku](ctx, n)
+	defer wp.Close()
+
+	tasks := make([]workerpool.Task[uint32, productreswithsku], 0, n)
+	for _, sku := range skus {
+		tasks = append(tasks, workerpool.Task[uint32, productreswithsku]{InArgs: sku, Callback: func(sku uint32) productreswithsku {
+			product, err := c.GetProduct(ctx, token, sku)
+			return productreswithsku{ProductRes: ProductRes{Product: product, Err: err}, sku: sku}
+		}})
+	}
+	wp.Submit(ctx, tasks)
+
+	result := make(map[uint32]ProductRes, n)
+	for res := range wp.Output() {
+		result[res.sku] = res.ProductRes
+	}
+
+	return result
+}
+
+func (c *client) ListSkus(ctx context.Context, token string, startAfterSku uint32, count uint32) ([]uint32, error) {
 	res, err := c.noteClient.ListSkus(ctx, &productServiceAPI.ListSkusRequest{Token: token, StartAfterSku: startAfterSku, Count: count})
 
 	if err != nil {

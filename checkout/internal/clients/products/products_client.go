@@ -27,14 +27,15 @@ func (c *Client) Product(ctx context.Context, sku uint32) (domain.ProductDesc, e
 	return domain.ProductDesc{Name: response.Name, Price: response.Price}, nil
 }
 
-type GetSkusRequest struct {
-	Token         string `json:"token"`
-	StartAfterSku uint32 `json:"startAfterSku"`
-	Count         uint32 `json:"count"`
-}
+func (c *Client) Products(ctx context.Context, skus []uint32) domain.ProductsDesc {
+	response := c.grpcClient.GetProducts(ctx, c.token, skus)
+	res := make(domain.ProductsDesc, len(response))
 
-type GetSkustResponse struct {
-	Skus []uint32 `json:"Skus"`
+	for k, v := range response {
+		res[k] = domain.ProductDesc{Name: v.Product.Name, Price: v.Product.Price, Err: v.Err}
+	}
+
+	return res
 }
 
 func (c *Client) Skus(ctx context.Context, startAfterSku uint32, count uint32) ([]uint32, error) {
