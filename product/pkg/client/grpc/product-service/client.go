@@ -2,6 +2,7 @@ package loms_client
 
 import (
 	"context"
+	"log"
 	"route256/libs/workerpool"
 	productServiceAPI "route256/product/pkg/product"
 
@@ -32,6 +33,7 @@ func New(cc *grpc.ClientConn) *client {
 }
 
 func (c *client) GetProduct(ctx context.Context, token string, sku uint32) (*Product, error) {
+	log.Println("Send GetProduct for sku", sku)
 	res, err := c.noteClient.GetProduct(ctx, &productServiceAPI.GetProductRequest{Token: token, Sku: sku})
 	if err != nil {
 		return nil, err
@@ -52,7 +54,12 @@ type productreswithsku struct {
 
 func (c *client) GetProducts(ctx context.Context, token string, skus []uint32) map[uint32]ProductRes {
 	n := len(skus)
-	wp := workerpool.New[uint32, productreswithsku](ctx, n)
+	amountWorkers := n
+	if amountWorkers > 5 {
+		amountWorkers = 5
+	}
+
+	wp := workerpool.New[uint32, productreswithsku](ctx, amountWorkers)
 	defer wp.Close()
 
 	tasks := make([]workerpool.Task[uint32, productreswithsku], 0, n)
@@ -65,7 +72,14 @@ func (c *client) GetProducts(ctx context.Context, token string, skus []uint32) m
 	wp.Submit(ctx, tasks)
 
 	result := make(map[uint32]ProductRes, n)
-	for res := range wp.Output() {
+	output := wp.Output()
+	for i := 0; i < len(skus); i++ {
+		res, ok := <-output
+		if !ok {
+			log.Println("Chanel is closed")
+			break
+		}
+
 		result[res.sku] = res.ProductRes
 	}
 
