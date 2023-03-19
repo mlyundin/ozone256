@@ -110,7 +110,10 @@ func (r *LomsRepo) UpdateStatusBefore(ctx context.Context, beforeTimestamp int64
 	res := make([]int64, 0)
 	for rows.Next() {
 		var orderID int64
-		rows.Scan(&orderID)
+		err = rows.Scan(&orderID)
+		if err != nil {
+			return nil, err
+		}
 		res = append(res, orderID)
 	}
 

@@ -17,10 +17,9 @@ import (
 	productcln "route256/product/pkg/client/grpc/product-service"
 	"time"
 
-	"golang.org/x/time/rate"
-
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
