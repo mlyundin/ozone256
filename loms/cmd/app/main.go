@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 	"route256/libs/config"
 	"route256/libs/interceptors"
 	"route256/libs/postgress/transactor"
@@ -25,7 +28,9 @@ func main() {
 		log.Fatal("config init", err)
 	}
 
-	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
 	pool, err := pgxpool.Connect(ctx, config.ConfigData.Databases.Loms.Connection())
 	if err != nil {
 		log.Fatal(err)
@@ -59,9 +64,37 @@ func main() {
 				),
 			),
 		)
-
 		reflection.Register(s)
-		desc.RegisterLomsServer(s, loms.New(domain.New(stockHandler, tr)))
+
+		dmn := domain.New(stockHandler, tr)
+		desc.RegisterLomsServer(s, loms.New(dmn))
+
+		{
+			ticker := time.NewTicker(time.Minute * 1)
+
+			go func() {
+				for {
+					select {
+					case <-ticker.C:
+						orders, err := dmn.CancelUnpayedOrders(ctx, time.Now().Add(time.Duration(-10)*time.Minute))
+						if err != nil {
+							log.Printf("Falied to cancel updayed orders due to %v \n", err)
+						} else if len(orders) == 0 {
+							log.Println("Nothing to cancel")
+						} else {
+							for _, orderId := range orders {
+								log.Printf("Order %d has been canceled\n", orderId)
+							}
+						}
+
+					case <-ctx.Done():
+						fmt.Println("Goodbye!")
+						return
+					}
+				}
+			}()
+
+		}
 
 		log.Printf("server listening at %v", lis.Addr())
 

@@ -20,6 +20,7 @@ type StocksChecker interface {
 
 type ProductChecker interface {
 	Product(ctx context.Context, sku uint32) (ProductDesc, error)
+	Products(ctx context.Context, skus []uint32) ProductsDesc
 	Skus(ctx context.Context, startAfterSku uint32, count uint32) ([]uint32, error)
 }
 

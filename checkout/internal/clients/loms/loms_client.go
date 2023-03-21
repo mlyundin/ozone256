@@ -2,7 +2,6 @@ package loms
 
 import (
 	"context"
-
 	"route256/checkout/internal/domain"
 	loms "route256/loms/pkg/client/grpc/loms-service"
 	"route256/loms/pkg/model"

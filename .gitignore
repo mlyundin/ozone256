@@ -1,5 +1,6 @@
 .idea
 bin
+data
 vendor
 vendor-proto
 config.yml

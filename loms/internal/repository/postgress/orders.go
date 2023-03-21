@@ -86,6 +86,40 @@ func (r *LomsRepo) UpdateStatus(ctx context.Context, orderId int64, newStatus mo
 	return ErrStatusUpdateFail
 }
 
+func (r *LomsRepo) UpdateStatusBefore(ctx context.Context, beforeTimestamp int64, newStatus model.OrderStatus, currStatus model.OrderStatus) ([]int64, error) {
+	db := r.QueryEngineProvider.GetQueryEngine(ctx)
+
+	sql, args, err := sq.Update(ordersTable).
+		Where(sq.LtOrEq{"creation_time": beforeTimestamp}).
+		Where(sq.Eq{"status": currStatus}).
+		Set("status", newStatus).
+		PlaceholderFormat(sq.Dollar).
+		Suffix("RETURNING order_id").
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := db.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	res := make([]int64, 0)
+	for rows.Next() {
+		var orderID int64
+		err = rows.Scan(&orderID)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, orderID)
+	}
+
+	return res, nil
+}
+
 func (r *LomsRepo) GetOrder(ctx context.Context, orderId int64) (*model.Order, error) {
 	db := r.QueryEngineProvider.GetQueryEngine(ctx)
 

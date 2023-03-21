@@ -8,7 +8,7 @@ import (
 	"route256/checkout/internal/clients/loms"
 	"route256/checkout/internal/clients/products"
 	"route256/checkout/internal/domain"
-	"route256/checkout/internal/repository/postgress"
+	respository "route256/checkout/internal/repository/postgress"
 	desc "route256/checkout/pkg/checkout"
 	"route256/libs/config"
 	"route256/libs/interceptors"
@@ -19,9 +19,14 @@ import (
 
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+)
+
+const (
+	productRateLimit = 10
 )
 
 func main() {
@@ -38,7 +43,11 @@ func main() {
 	defer connLoms.Close()
 	lomsClient := loms.New(lomcln.New(connLoms))
 
-	connProduct, err := grpc.DialContext(context.Background(), config.ConfigData.Services.Products.Url(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	inter := interceptors.NewClientRateLimiterInterceptor(rate.NewLimiter(rate.Every(time.Second/productRateLimit), productRateLimit))
+	connProduct, err := grpc.DialContext(context.Background(),
+		config.ConfigData.Services.Products.Url(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(inter.Intercept))
 	if err != nil {
 		log.Fatalf("failed to connect to server: %v", err)
 	}
