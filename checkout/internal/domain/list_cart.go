@@ -41,7 +41,7 @@ func (m *Model) ListCart(ctx context.Context, user int64) (*Cart, error) {
 	for i, item := range cart.Items {
 		desc, found := productsDesc[item.Sku]
 		if !found || desc.Err != nil {
-			log.Printf("Could not get description fot sku(%d)", item.Sku)
+			log.Printf("Could not get description fot sku(%d)\n", item.Sku)
 			continue
 		}
 

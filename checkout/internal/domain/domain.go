@@ -44,3 +44,20 @@ func New(stocksChecker StocksChecker, productChecker ProductChecker, cartHandler
 		cartHandler:    cartHandler,
 	}
 }
+
+func NewMock(deps ...interface{}) *Model {
+	model := Model{}
+
+	for _, v := range deps {
+		switch s := v.(type) {
+		case StocksChecker:
+			model.stocksChecker = s
+		case CartHandler:
+			model.cartHandler = s
+		case ProductChecker:
+			model.productChecker = s
+		}
+	}
+
+	return &model
+}

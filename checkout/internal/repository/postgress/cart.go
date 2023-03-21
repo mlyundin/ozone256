@@ -1,5 +1,8 @@
 package respository
 
+//go:generate sh -c "rm -rf mocks && mkdir -p mocks"
+//go:generate minimock -i CartRepo -o ./mocks/ -s "_minimock.go"
+
 import (
 	"context"
 	"errors"
