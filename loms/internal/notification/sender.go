@@ -3,11 +3,10 @@ package notification
 import (
 	"fmt"
 	"log"
+	"route256/loms/pkg/model"
 	"time"
 
 	"github.com/Shopify/sarama"
-
-	"route256/loms/pkg/model"
 )
 
 type notificationSender struct {

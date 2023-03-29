@@ -66,6 +66,12 @@ services:
     networks:
       - net
 
+  notifications:
+    image: notifications
+    build: ./notifications/
+    networks:
+      - net
+
   # kafka
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
