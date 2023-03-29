@@ -3,10 +3,12 @@ package notification
 import (
 	"fmt"
 	"log"
+	desc "route256/loms/pkg/loms"
 	"route256/loms/pkg/model"
 	"time"
 
 	"github.com/Shopify/sarama"
+	"google.golang.org/protobuf/proto"
 )
 
 type notificationSender struct {
@@ -48,10 +50,17 @@ func NewOrderSender(producer1 sarama.SyncProducer, producer2 sarama.AsyncProduce
 }
 
 func (s *notificationSender) SendOrderStatusUpdate(orderID int64, newStatus, oldStatus model.OrderStatus) error {
+
+	t := desc.OrderUpdateNotification{OrderId: orderID, NewStatus: desc.OrderStatus(newStatus), OldStatus: desc.OrderStatus(oldStatus)}
+	data, err := proto.Marshal(&t)
+	if err != nil {
+		return err
+	}
+
 	msg := &sarama.ProducerMessage{
 		Topic:     s.topic,
 		Partition: -1,
-		Value:     sarama.StringEncoder(fmt.Sprintf(`{"order_id": %d, "new_status": %d, "old_status": %d}`, orderID, newStatus, oldStatus)),
+		Value:     sarama.ByteEncoder(data),
 		Key:       sarama.StringEncoder(fmt.Sprint(orderID)),
 		Timestamp: time.Now(),
 	}

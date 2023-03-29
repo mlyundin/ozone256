@@ -7,7 +7,7 @@ import (
 	"github.com/Shopify/sarama"
 )
 
-type HandleFunc func(id string, value string)
+type HandleFunc func(id string, value []byte)
 
 type Reciver struct {
 	consumer sarama.Consumer
@@ -46,8 +46,7 @@ func (r *Reciver) Subscribe(topic string) error {
 		go func(pc sarama.PartitionConsumer) {
 			for message := range pc.Messages() {
 				k := string(message.Key)
-				value := string(message.Value)
-				handler(k, value)
+				handler(k, message.Value)
 				log.Printf("read: key: %s, topic: %s, partion: %d, offset: %d",
 					k, topic, message.Partition, message.Offset)
 			}
