@@ -7,7 +7,7 @@ import (
 
 func (s *domainmodel) OrderPayed(ctx context.Context, orderId int64) error {
 	return s.tm.RunRepeteableRead(ctx, func(ctxTX context.Context) error {
-		err := s.lomsRepo.UpdateStatus(ctxTX, orderId, model.StatusPayed, model.StatusAwaitingPayment)
+		err := s.UpdateStatus(ctxTX, orderId, model.StatusPayed, model.StatusAwaitingPayment)
 		if err != nil {
 			return err
 		}

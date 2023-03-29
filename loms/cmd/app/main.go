@@ -9,9 +9,11 @@ import (
 	"os/signal"
 	"route256/libs/config"
 	"route256/libs/interceptors"
+	"route256/libs/kafka"
 	"route256/libs/postgress/transactor"
 	"route256/loms/internal/api/loms"
 	"route256/loms/internal/domain"
+	"route256/loms/internal/notification"
 	"route256/loms/internal/repository/postgress"
 	desc "route256/loms/pkg/loms"
 	"time"
@@ -51,6 +53,40 @@ func main() {
 	tr := transactor.New(pool)
 	stockHandler := respository.New(tr)
 
+	var ns domain.NotificationSender
+	{
+		// TODO wait for kafka brokers up
+		time.Sleep(10 * time.Second)
+		brokers := make([]string, 0, len(config.ConfigData.Kafka.Brokers))
+		for _, broker := range config.ConfigData.Kafka.Brokers {
+			brokers = append(brokers, broker.Url())
+		}
+
+		producer, err := kafka.NewSyncProducer(brokers)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		asyncProducer, err := kafka.NewAsyncProducer(brokers)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		onSuccess := func(id string) {
+			log.Println("order success", id)
+		}
+		onFailed := func(id string) {
+			log.Println("order failed", id)
+		}
+
+		ns = notification.NewOrderSender(
+			producer,
+			asyncProducer,
+			config.ConfigData.Kafka.OrderStatusTopic,
+			onSuccess, onFailed,
+		)
+	}
+
 	{
 		lis, err := net.Listen("tcp", ":"+config.ConfigData.Services.Loms.Port)
 		if err != nil {
@@ -66,7 +102,7 @@ func main() {
 		)
 		reflection.Register(s)
 
-		dmn := domain.New(stockHandler, tr)
+		dmn := domain.New(stockHandler, tr, ns)
 		desc.RegisterLomsServer(s, loms.New(dmn))
 
 		{

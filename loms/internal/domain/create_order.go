@@ -16,8 +16,13 @@ func (dm *domainmodel) CreateOrder(ctx context.Context, user int64, items []*mod
 		return -1, err
 	}
 
+	err = dm.ns.SendOrderStatusUpdate(orderId, model.StatusNew, model.StatusUnknown)
+	if err != nil {
+		return -1, err
+	}
+
 	err = dm.tm.RunRepeteableRead(ctx, func(ctxTX context.Context) error {
-		err = dm.lomsRepo.UpdateStatus(ctxTX, orderId, model.StatusAwaitingPayment, model.StatusNew)
+		err = dm.UpdateStatus(ctxTX, orderId, model.StatusAwaitingPayment, model.StatusNew)
 
 		for _, item := range items {
 			stocks, err := dm.lomsRepo.Stocks(ctxTX, item.Sku)
@@ -63,7 +68,7 @@ func (dm *domainmodel) CreateOrder(ctx context.Context, user int64, items []*mod
 	})
 
 	if err != nil {
-		err = dm.lomsRepo.UpdateStatus(ctx, orderId, model.StatusFalied, model.StatusNew)
+		err = dm.UpdateStatus(ctx, orderId, model.StatusFalied, model.StatusNew)
 		if err != nil {
 			return -1, err
 		}
