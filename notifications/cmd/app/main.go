@@ -7,7 +7,6 @@ import (
 	"route256/libs/kafka"
 	desc "route256/loms/pkg/loms"
 	receiver "route256/notifications/internal/kafka"
-	"time"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -19,8 +18,6 @@ func main() {
 		log.Fatal("config init", err)
 	}
 
-	// TODO wait for kafka brokers up
-	time.Sleep(15 * time.Second)
 	brokers := make([]string, 0, len(config.ConfigData.Kafka.Brokers))
 	for _, broker := range config.ConfigData.Kafka.Brokers {
 		brokers = append(brokers, broker.Url())

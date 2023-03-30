@@ -63,12 +63,25 @@ services:
     depends_on: 
       postgres-loms:
         condition: service_healthy
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_healthy
+      kafka3:
+        condition: service_healthy
     networks:
       - net
 
   notifications:
     image: notifications
     build: ./notifications/
+    depends_on:
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_healthy
+      kafka3:
+        condition: service_healthy
     networks:
       - net
 
@@ -96,7 +109,7 @@ services:
   kafka1:
     image: confluentinc/cp-kafka:latest
     healthcheck:
-      test: ps augwwx | egrep [S]upportedKafka
+      test: ps augwwx | egrep [k]afka
     depends_on:
       zookeeper:
         condition: service_healthy
@@ -116,7 +129,7 @@ services:
   kafka2:
     image: confluentinc/cp-kafka:latest
     healthcheck:
-      test: ps augwwx | egrep [S]upportedKafka
+      test: ps augwwx | egrep [k]afka
     depends_on:
       zookeeper:
         condition: service_healthy
@@ -132,10 +145,11 @@ services:
     - ZOOKEEPER=zookeeper:2181
     networks:
       - net
+
   kafka3:
     image: confluentinc/cp-kafka:latest
     healthcheck:
-      test: ps augwwx | egrep [S]upportedKafka
+      test: ps augwwx | egrep [k]afka
     depends_on:
       zookeeper:
         condition: service_healthy

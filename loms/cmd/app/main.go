@@ -55,8 +55,6 @@ func main() {
 
 	var ns domain.NotificationSender
 	{
-		// TODO wait for kafka brokers up
-		time.Sleep(10 * time.Second)
 		brokers := make([]string, 0, len(config.ConfigData.Kafka.Brokers))
 		for _, broker := range config.ConfigData.Kafka.Brokers {
 			brokers = append(brokers, broker.Url())
