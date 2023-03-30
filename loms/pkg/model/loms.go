@@ -11,30 +11,6 @@ const (
 	StatusCancelled
 )
 
-func Status2Str(status OrderStatus) string {
-	switch status {
-	case StatusUnknown:
-		return "Unknown"
-
-	case StatusNew:
-		return "New"
-
-	case StatusAwaitingPayment:
-		return "AwaitingPayment"
-
-	case StatusFalied:
-		return "Failed"
-
-	case StatusPayed:
-		return "Payed"
-
-	case StatusCancelled:
-		return "Canceled"
-	}
-
-	return ""
-}
-
 type StockItem struct {
 	WarehouseID int64
 	Count       uint64

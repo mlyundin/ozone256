@@ -6,7 +6,6 @@ import (
 	"route256/libs/config"
 	"route256/libs/kafka"
 	desc "route256/loms/pkg/loms"
-	"route256/loms/pkg/model"
 	receiver "route256/notifications/internal/kafka"
 	"time"
 
@@ -40,8 +39,8 @@ func main() {
 			if err != nil {
 				log.Println("Failed to unmarshal order status notification:", err)
 			} else {
-				log.Println("Status update new status: ", model.Status2Str(model.OrderStatus(status.NewStatus)),
-					" old: ", model.Status2Str(model.OrderStatus(status.OldStatus)))
+				log.Println("For order: ", status.GetOrderId(), " status update: ",
+					desc.OrderStatus_name[int32(status.GetOldStatus())], " -> ", desc.OrderStatus_name[int32(status.GetNewStatus())])
 			}
 		},
 	}
