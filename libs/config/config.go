@@ -43,6 +43,11 @@ type ConfigStruct struct {
 		Checkout database `yaml:"checkout"`
 		Loms     database `yaml:"loms"`
 	} `yaml:"databases"`
+
+	Kafka struct {
+		OrderStatusTopic string    `yaml:"order_status_topic"`
+		Brokers          []service `yaml:"brokers,flow"`
+	} `yaml:"kafka"`
 }
 
 var ConfigData ConfigStruct

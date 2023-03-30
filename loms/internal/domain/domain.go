@@ -34,6 +34,10 @@ type LomsRepository interface {
 	GetReservations(ctx context.Context, orderId int64) ([]*Reservation, error)
 }
 
+type NotificationSender interface {
+	SendOrderStatusUpdate(orderID int64, newStatus, oldStatus model.OrderStatus) error
+}
+
 type Model interface {
 	Stocks(ctx context.Context, sku uint32) ([]*model.StockItem, error)
 
@@ -55,8 +59,23 @@ type NewOrderQueue interface {
 type domainmodel struct {
 	lomsRepo LomsRepository
 	tm       TransactionManager
+	ns       NotificationSender
 }
 
-func New(lomsRepo LomsRepository, tm TransactionManager) *domainmodel {
-	return &domainmodel{lomsRepo, tm}
+func New(lomsRepo LomsRepository, tm TransactionManager, nf NotificationSender) *domainmodel {
+	return &domainmodel{lomsRepo, tm, nf}
+}
+
+func (dm *domainmodel) UpdateStatus(ctx context.Context, orderId int64, newStatus model.OrderStatus, currStatus model.OrderStatus) error {
+	err := dm.lomsRepo.UpdateStatus(ctx, orderId, newStatus, currStatus)
+	if err != nil {
+		return err
+	}
+
+	err = dm.ns.SendOrderStatusUpdate(orderId, newStatus, currStatus)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

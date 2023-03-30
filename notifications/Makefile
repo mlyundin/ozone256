@@ -8,11 +8,14 @@ PACKAGE=route256/notifications/cmd/app
 
 all: format build test lint
 
-build: bindir
+build: bindir copyconfig
 	go build -o ${BINDIR}/app ${PACKAGE}
 
 test:
 	go test ./...
+
+copyconfig:
+	cp ../config.yml .
 
 run:
 	go run ${PACKAGE}

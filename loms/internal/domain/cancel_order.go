@@ -8,7 +8,7 @@ import (
 
 func (s *domainmodel) CancelOrder(ctx context.Context, orderId int64) error {
 	return s.tm.RunRepeteableRead(ctx, func(ctxTX context.Context) error {
-		err := s.lomsRepo.UpdateStatus(ctxTX, orderId, model.StatusCancelled, model.StatusAwaitingPayment)
+		err := s.UpdateStatus(ctxTX, orderId, model.StatusCancelled, model.StatusAwaitingPayment)
 		if err != nil {
 			return err
 		}
@@ -38,11 +38,11 @@ func (s *domainmodel) CancelUnpayedOrders(ctx context.Context, beforeTimestamp t
 	var res []int64
 	err := s.tm.RunRepeteableRead(ctx, func(ctxTX context.Context) error {
 		orders, err := s.lomsRepo.UpdateStatusBefore(ctxTX, beforeTimestamp.Unix(), model.StatusCancelled, model.StatusAwaitingPayment)
-		res = orders
-
 		if err != nil {
 			return err
 		}
+
+		res = orders
 
 		for _, orderId := range orders {
 			reservations, err := s.lomsRepo.GetReservations(ctxTX, orderId)
@@ -58,6 +58,11 @@ func (s *domainmodel) CancelUnpayedOrders(ctx context.Context, beforeTimestamp t
 			}
 
 			err = s.lomsRepo.ReleaseAllReservations(ctxTX, orderId)
+			if err != nil {
+				return err
+			}
+
+			err = s.ns.SendOrderStatusUpdate(orderId, model.StatusCancelled, model.StatusAwaitingPayment)
 			if err != nil {
 				return err
 			}

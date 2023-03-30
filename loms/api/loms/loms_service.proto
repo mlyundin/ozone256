@@ -73,3 +73,9 @@ message CancelOrderRequest {
 message OrderPayedRequest {
   int64 orderId = 1;
 }
+
+message OrderUpdateNotification {
+  int64 orderId = 1; 
+  OrderStatus newStatus = 2;
+  OrderStatus oldStatus = 3;
+}
