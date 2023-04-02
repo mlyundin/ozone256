@@ -1,7 +1,8 @@
 package kafka
 
 import (
-	"log"
+	"fmt"
+	"route256/libs/logger"
 
 	"github.com/Shopify/sarama"
 )
@@ -43,8 +44,7 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	for {
 		select {
 		case message := <-claim.Messages():
-			log.Printf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic)
-			//
+			logger.Debug(fmt.Sprint("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic))
 			session.MarkMessage(message, "")
 
 		// Should return when `session.Context()` is done.

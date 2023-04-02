@@ -2,7 +2,9 @@ package domain
 
 import (
 	"context"
-	"log"
+	"route256/libs/logger"
+
+	"go.uber.org/zap"
 )
 
 type ProductDesc struct {
@@ -41,7 +43,7 @@ func (m *Model) ListCart(ctx context.Context, user int64) (*Cart, error) {
 	for i, item := range cart.Items {
 		desc, found := productsDesc[item.Sku]
 		if !found || desc.Err != nil {
-			log.Printf("Could not get description fot sku(%d)\n", item.Sku)
+			logger.Error("Could not get description for ", zap.Uint32("sku", item.Sku))
 			continue
 		}
 

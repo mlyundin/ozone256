@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"route256/libs/config"
 	"route256/libs/kafka"
+	"route256/libs/logger"
 	desc "route256/loms/pkg/loms"
 	receiver "route256/notifications/internal/kafka"
 
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -18,6 +21,8 @@ func main() {
 		log.Fatal("config init", err)
 	}
 
+	logger.Init(config.ConfigData.Services.Logging.Devel)
+
 	brokers := make([]string, 0, len(config.ConfigData.Kafka.Brokers))
 	for _, broker := range config.ConfigData.Kafka.Brokers {
 		brokers = append(brokers, broker.Url())
@@ -25,7 +30,7 @@ func main() {
 
 	consumer, err := kafka.NewConsumer(brokers)
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatal("failed to create kafka consumer", zap.Error(err))
 	}
 
 	topic := config.ConfigData.Kafka.OrderStatusTopic
@@ -34,17 +39,17 @@ func main() {
 			status := &desc.OrderUpdateNotification{}
 			err := proto.Unmarshal(value, status)
 			if err != nil {
-				log.Println("Failed to unmarshal order status notification:", err)
+				logger.Error("Failed to unmarshal order status notification:", zap.Error(err))
 			} else {
-				log.Println("For order: ", status.GetOrderId(), " status update: ",
-					desc.OrderStatus_name[int32(status.GetOldStatus())], " -> ", desc.OrderStatus_name[int32(status.GetNewStatus())])
+				logger.Info(fmt.Sprint("For order: ", status.GetOrderId(), " status update: ",
+					desc.OrderStatus_name[int32(status.GetOldStatus())], " -> ", desc.OrderStatus_name[int32(status.GetNewStatus())]))
 			}
 		},
 	}
 	r := receiver.NewReciver(consumer, handlers)
 	err = r.Subscribe(topic)
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatal("failed to subscribe", zap.Error(err))
 	}
 
 	<-context.TODO().Done()

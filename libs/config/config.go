@@ -31,6 +31,9 @@ func (s service) Url() string {
 
 type ConfigStruct struct {
 	Services struct {
+		Logging struct {
+			Devel bool `yaml:"devel"`
+		} `yaml:"logging"`
 		Checkout service `yaml:"checkout"`
 		Loms     service `yaml:"loms"`
 		Products struct {

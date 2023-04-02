@@ -2,7 +2,8 @@ package receiver
 
 import (
 	"errors"
-	"log"
+	"fmt"
+	"route256/libs/logger"
 
 	"github.com/Shopify/sarama"
 )
@@ -47,8 +48,8 @@ func (r *Reciver) Subscribe(topic string) error {
 			for message := range pc.Messages() {
 				k := string(message.Key)
 				handler(k, message.Value)
-				log.Printf("read: key: %s, topic: %s, partion: %d, offset: %d",
-					k, topic, message.Partition, message.Offset)
+				logger.Debug(fmt.Sprintf("read: key: %s, topic: %s, partion: %d, offset: %d",
+					k, topic, message.Partition, message.Offset))
 			}
 		}(pc)
 	}

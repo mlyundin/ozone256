@@ -2,10 +2,11 @@ package loms_client
 
 import (
 	"context"
-	"log"
+	"route256/libs/logger"
 	"route256/libs/workerpool"
 	productServiceAPI "route256/product/pkg/product"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -33,7 +34,7 @@ func New(cc *grpc.ClientConn) *client {
 }
 
 func (c *client) GetProduct(ctx context.Context, token string, sku uint32) (*Product, error) {
-	log.Println("Send GetProduct for sku", sku)
+	logger.Info("Send GetProduct for ", zap.Uint32("sku", sku))
 	res, err := c.noteClient.GetProduct(ctx, &productServiceAPI.GetProductRequest{Token: token, Sku: sku})
 	if err != nil {
 		return nil, err
@@ -76,7 +77,7 @@ func (c *client) GetProducts(ctx context.Context, token string, skus []uint32) m
 	for i := 0; i < len(skus); i++ {
 		res, ok := <-output
 		if !ok {
-			log.Println("Chanel is closed")
+			logger.Info("Chanel is closed")
 			break
 		}
 

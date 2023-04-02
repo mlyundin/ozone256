@@ -12,6 +12,7 @@ import (
 	desc "route256/checkout/pkg/checkout"
 	"route256/libs/config"
 	"route256/libs/interceptors"
+	"route256/libs/logger"
 	"route256/libs/postgress/transactor"
 	lomcln "route256/loms/pkg/client/grpc/loms-service"
 	productcln "route256/product/pkg/client/grpc/product-service"
@@ -19,6 +20,7 @@ import (
 
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -35,10 +37,12 @@ func main() {
 		log.Fatal("config init", err)
 	}
 
+	logger.Init(config.ConfigData.Services.Logging.Devel)
+
 	connLoms, err := grpc.DialContext(context.Background(), config.ConfigData.Services.Loms.Url(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("failed to connect to server: %v", err)
+		logger.Fatal("failed to connect to server", zap.Error(err))
 	}
 	defer connLoms.Close()
 	lomsClient := loms.New(lomcln.New(connLoms))
@@ -49,7 +53,7 @@ func main() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(inter.Intercept))
 	if err != nil {
-		log.Fatalf("failed to connect to server: %v", err)
+		logger.Fatal("failed to connect to server", zap.Error(err))
 	}
 	defer connProduct.Close()
 	productClient := products.New(productcln.New(connProduct), config.ConfigData.Services.Products.Token)
@@ -57,7 +61,7 @@ func main() {
 	ctx := context.Background()
 	pool, err := pgxpool.Connect(ctx, config.ConfigData.Databases.Checkout.Connection())
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("failed to connect to postgress", zap.Error(err))
 	}
 	defer pool.Close()
 	{
@@ -68,7 +72,7 @@ func main() {
 		config.MaxConns = 10
 
 		if err := pool.Ping(ctx); err != nil {
-			log.Fatal(err)
+			logger.Fatal("failed ping to postgress", zap.Error(err))
 		}
 	}
 	cartHandler := respository.New(transactor.New(pool))
@@ -76,7 +80,7 @@ func main() {
 	{
 		lis, err := net.Listen("tcp", ":"+config.ConfigData.Services.Checkout.Port)
 		if err != nil {
-			log.Fatalf("failed to listen: %v", err)
+			logger.Fatal("failed to listen", zap.Error(err))
 		}
 
 		server := grpc.NewServer(
@@ -91,9 +95,10 @@ func main() {
 		domain := domain.New(lomsClient, productClient, cartHandler)
 		desc.RegisterCheckoutServer(server, checkout.New(domain))
 
-		log.Printf("server listening at %v", lis.Addr())
+		logger.Info("server listening at", zap.String("adress", lis.Addr().String()))
 		if err = server.Serve(lis); err != nil {
-			log.Fatalf("failed to serve: %v", err)
+			logger.Fatal("failed to serve", zap.Error(err))
+
 		}
 	}
 }
