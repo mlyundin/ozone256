@@ -8,14 +8,18 @@ import (
 	"os/signal"
 	"route256/libs/config"
 	"route256/libs/interceptors"
-	"route256/libs/kafka"
+	"route256/libs/metrics"
+
+	//"route256/libs/kafka"
 	"route256/libs/logger"
 	"route256/libs/postgress/transactor"
 	"route256/loms/internal/api/loms"
 	"route256/loms/internal/domain"
-	"route256/loms/internal/notification"
+
+	//"route256/loms/internal/notification"
 	"route256/loms/internal/repository/postgress"
 	desc "route256/loms/pkg/loms"
+	"route256/loms/pkg/model"
 	"time"
 
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -24,6 +28,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
+
+// TODO delete
+type tmp struct {
+}
+
+func (t *tmp) SendOrderStatusUpdate(orderID int64, newStatus, oldStatus model.OrderStatus) error {
+	return nil
+}
 
 func main() {
 	err := config.Init()
@@ -56,37 +68,37 @@ func main() {
 	tr := transactor.New(pool)
 	stockHandler := respository.New(tr)
 
-	var ns domain.NotificationSender
-	{
-		brokers := make([]string, 0, len(config.ConfigData.Kafka.Brokers))
-		for _, broker := range config.ConfigData.Kafka.Brokers {
-			brokers = append(brokers, broker.Url())
-		}
+	var ns domain.NotificationSender = &tmp{}
+	// {
+	// 	brokers := make([]string, 0, len(config.ConfigData.Kafka.Brokers))
+	// 	for _, broker := range config.ConfigData.Kafka.Brokers {
+	// 		brokers = append(brokers, broker.Url())
+	// 	}
 
-		producer, err := kafka.NewSyncProducer(brokers)
-		if err != nil {
-			logger.Fatal("failed to create kafka sync producer", zap.Error(err))
-		}
+	// 	producer, err := kafka.NewSyncProducer(brokers)
+	// 	if err != nil {
+	// 		logger.Fatal("failed to create kafka sync producer", zap.Error(err))
+	// 	}
 
-		asyncProducer, err := kafka.NewAsyncProducer(brokers)
-		if err != nil {
-			logger.Fatal("failed to create kafka async producer", zap.Error(err))
-		}
+	// 	asyncProducer, err := kafka.NewAsyncProducer(brokers)
+	// 	if err != nil {
+	// 		logger.Fatal("failed to create kafka async producer", zap.Error(err))
+	// 	}
 
-		onSuccess := func(id string) {
-			logger.Info("order success", zap.String("id", id))
-		}
-		onFailed := func(id string) {
-			logger.Error("order failed", zap.String("id", id))
-		}
+	// 	onSuccess := func(id string) {
+	// 		logger.Info("order success", zap.String("id", id))
+	// 	}
+	// 	onFailed := func(id string) {
+	// 		logger.Error("order failed", zap.String("id", id))
+	// 	}
 
-		ns = notification.NewOrderSender(
-			producer,
-			asyncProducer,
-			config.ConfigData.Kafka.OrderStatusTopic,
-			onSuccess, onFailed,
-		)
-	}
+	// 	ns = notification.NewOrderSender(
+	// 		producer,
+	// 		asyncProducer,
+	// 		config.ConfigData.Kafka.OrderStatusTopic,
+	// 		onSuccess, onFailed,
+	// 	)
+	// }
 
 	{
 		lis, err := net.Listen("tcp", ":"+config.ConfigData.Services.Loms.Port)
@@ -98,6 +110,7 @@ func main() {
 			grpc.UnaryInterceptor(
 				grpcMiddleware.ChainUnaryServer(
 					interceptors.LoggingInterceptor,
+					metrics.Intercept,
 				),
 			),
 		)
@@ -130,6 +143,8 @@ func main() {
 			}()
 
 		}
+
+		go metrics.RunHttpServer(config.ConfigData.Services.Loms.MetricsPort)
 
 		logger.Info("server listening at ", zap.String("addr", lis.Addr().String()))
 		if err = s.Serve(lis); err != nil {

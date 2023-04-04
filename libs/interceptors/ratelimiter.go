@@ -3,6 +3,7 @@ package interceptors
 import (
 	"context"
 	"fmt"
+	"route256/libs/logger"
 	"time"
 
 	"google.golang.org/grpc"
@@ -34,7 +35,7 @@ func (i *clientRateLimiterInterceptor) Intercept(
 	end := time.Now()
 
 	err := invoker(ctx, method, req, reply, cc, opts...)
-	fmt.Printf("Invoked RPC method=%s; Wait=%s; Error=%v\n", method, end.Sub(start), err)
+	logger.Debug(fmt.Sprintf("Invoked RPC method=%s; Wait=%s; Error=%v", method, end.Sub(start), err))
 
 	return err
 }

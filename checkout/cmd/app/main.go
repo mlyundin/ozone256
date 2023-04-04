@@ -13,6 +13,7 @@ import (
 	"route256/libs/config"
 	"route256/libs/interceptors"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/libs/postgress/transactor"
 	lomcln "route256/loms/pkg/client/grpc/loms-service"
 	productcln "route256/product/pkg/client/grpc/product-service"
@@ -87,6 +88,7 @@ func main() {
 			grpc.UnaryInterceptor(
 				grpcMiddleware.ChainUnaryServer(
 					interceptors.LoggingInterceptor,
+					metrics.Intercept,
 				),
 			),
 		)
@@ -94,6 +96,8 @@ func main() {
 
 		domain := domain.New(lomsClient, productClient, cartHandler)
 		desc.RegisterCheckoutServer(server, checkout.New(domain))
+
+		go metrics.RunHttpServer(config.ConfigData.Services.Checkout.MetricsPort)
 
 		logger.Info("server listening at", zap.String("adress", lis.Addr().String()))
 		if err = server.Serve(lis); err != nil {

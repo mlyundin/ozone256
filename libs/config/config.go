@@ -34,8 +34,17 @@ type ConfigStruct struct {
 		Logging struct {
 			Devel bool `yaml:"devel"`
 		} `yaml:"logging"`
-		Checkout service `yaml:"checkout"`
-		Loms     service `yaml:"loms"`
+
+		Checkout struct {
+			service     `yaml:",inline"`
+			MetricsPort string `yaml:"metrics_port"`
+		} `yaml:"checkout"`
+
+		Loms struct {
+			service     `yaml:",inline"`
+			MetricsPort string `yaml:"metrics_port"`
+		} `yaml:"loms"`
+
 		Products struct {
 			service `yaml:",inline"`
 			Token   string `yaml:"token"`
