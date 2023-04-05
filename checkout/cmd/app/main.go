@@ -15,6 +15,7 @@ import (
 	"route256/libs/logger"
 	"route256/libs/metrics"
 	"route256/libs/postgress/transactor"
+	"route256/libs/tracing"
 	lomcln "route256/loms/pkg/client/grpc/loms-service"
 	productcln "route256/product/pkg/client/grpc/product-service"
 	"time"
@@ -26,6 +27,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	"github.com/opentracing/opentracing-go"
 )
 
 const (
@@ -39,20 +43,23 @@ func main() {
 	}
 
 	logger.Init(config.ConfigData.Services.Logging.Devel)
+	tracing.Init("checkout")
 
+	// Loms
 	connLoms, err := grpc.DialContext(context.Background(), config.ConfigData.Services.Loms.Url(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()))
+		grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
 		logger.Fatal("failed to connect to server", zap.Error(err))
 	}
 	defer connLoms.Close()
 	lomsClient := loms.New(lomcln.New(connLoms))
 
+	// Product
 	inter := interceptors.NewClientRateLimiterInterceptor(rate.NewLimiter(rate.Every(time.Second/productRateLimit), productRateLimit))
 	connProduct, err := grpc.DialContext(context.Background(),
 		config.ConfigData.Services.Products.Url(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(inter.Intercept))
+		grpc.WithChainUnaryInterceptor(inter.Intercept, otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
 		logger.Fatal("failed to connect to server", zap.Error(err))
 	}
@@ -78,6 +85,8 @@ func main() {
 	}
 	cartHandler := respository.New(transactor.New(pool))
 
+	go metrics.RunHttpServer(config.ConfigData.Services.Checkout.MetricsPort)
+
 	{
 		lis, err := net.Listen("tcp", ":"+config.ConfigData.Services.Checkout.Port)
 		if err != nil {
@@ -89,6 +98,7 @@ func main() {
 				grpcMiddleware.ChainUnaryServer(
 					interceptors.LoggingInterceptor,
 					metrics.Intercept,
+					otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
 				),
 			),
 		)
@@ -97,12 +107,9 @@ func main() {
 		domain := domain.New(lomsClient, productClient, cartHandler)
 		desc.RegisterCheckoutServer(server, checkout.New(domain))
 
-		go metrics.RunHttpServer(config.ConfigData.Services.Checkout.MetricsPort)
-
 		logger.Info("server listening at", zap.String("adress", lis.Addr().String()))
 		if err = server.Serve(lis); err != nil {
 			logger.Fatal("failed to serve", zap.Error(err))
-
 		}
 	}
 }

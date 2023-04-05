@@ -8,11 +8,20 @@ require (
 )
 
 require (
+	github.com/golang/protobuf v1.3.2 // indirect
+	github.com/opentracing/opentracing-go v1.0.2 // indirect
+	golang.org/x/net v0.6.0 // indirect
+	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
+	google.golang.org/grpc v1.27.1 // indirect
+)
+
+require (
 	github.com/Masterminds/squirrel v1.5.3 // indirect
 	github.com/brianvoe/gofakeit/v6 v6.20.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/georgysavva/scany v1.2.1 // indirect
 	github.com/gojuno/minimock/v3 v3.1.2 // indirect
+	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/hexdigest/gowrap v1.1.8 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.14.0 // indirect

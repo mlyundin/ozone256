@@ -9,6 +9,7 @@ import (
 	"route256/libs/config"
 	"route256/libs/interceptors"
 	"route256/libs/metrics"
+	"route256/libs/tracing"
 
 	//"route256/libs/kafka"
 	"route256/libs/logger"
@@ -23,7 +24,9 @@ import (
 	"time"
 
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -100,17 +103,21 @@ func main() {
 	// 	)
 	// }
 
+	go metrics.RunHttpServer(config.ConfigData.Services.Loms.MetricsPort)
+
 	{
 		lis, err := net.Listen("tcp", ":"+config.ConfigData.Services.Loms.Port)
 		if err != nil {
 			logger.Fatal("failed to listen", zap.Error(err))
 		}
 
+		tracing.Init("loms")
 		s := grpc.NewServer(
 			grpc.UnaryInterceptor(
 				grpcMiddleware.ChainUnaryServer(
 					interceptors.LoggingInterceptor,
 					metrics.Intercept,
+					otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
 				),
 			),
 		)
@@ -143,8 +150,6 @@ func main() {
 			}()
 
 		}
-
-		go metrics.RunHttpServer(config.ConfigData.Services.Loms.MetricsPort)
 
 		logger.Info("server listening at ", zap.String("addr", lis.Addr().String()))
 		if err = s.Serve(lis); err != nil {
