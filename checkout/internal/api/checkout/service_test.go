@@ -6,6 +6,7 @@ import (
 	checkoutDomain "route256/checkout/internal/domain"
 	checkoutDomainMock "route256/checkout/internal/domain/mocks"
 	desc "route256/checkout/pkg/checkout"
+	"route256/libs/logger"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -16,6 +17,8 @@ import (
 )
 
 func TestListCart(t *testing.T) {
+	logger.Init(true)
+
 	type cartHandlerMockFunc func(mc *minimock.Controller) checkoutDomain.CartHandler
 	type productCheckerMockFunc func(mc *minimock.Controller) checkoutDomain.ProductChecker
 
@@ -132,6 +135,8 @@ func TestListCart(t *testing.T) {
 func TestPurchase(t *testing.T) {
 	type cartHandlerMockFunc func(mc *minimock.Controller) checkoutDomain.CartHandler
 	type stocksCheckerMockFunc func(mc *minimock.Controller) checkoutDomain.StocksChecker
+
+	logger.Init(true)
 
 	type args struct {
 		ctx context.Context
