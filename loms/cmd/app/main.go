@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -10,7 +9,10 @@ import (
 	"route256/libs/config"
 	"route256/libs/interceptors"
 	"route256/libs/kafka"
+	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/libs/postgress/transactor"
+	"route256/libs/tracing"
 	"route256/loms/internal/api/loms"
 	"route256/loms/internal/domain"
 	"route256/loms/internal/notification"
@@ -19,7 +21,10 @@ import (
 	"time"
 
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/opentracing/opentracing-go"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -30,12 +35,14 @@ func main() {
 		log.Fatal("config init", err)
 	}
 
+	logger.Init(config.ConfigData.Services.Logging.Devel)
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
 	pool, err := pgxpool.Connect(ctx, config.ConfigData.Databases.Loms.Connection())
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("failed to connect to postgress", zap.Error(err))
 	}
 	defer pool.Close()
 	{
@@ -46,7 +53,7 @@ func main() {
 		config.MaxConns = 10
 
 		if err := pool.Ping(ctx); err != nil {
-			log.Fatal(err)
+			logger.Fatal("failed ping to postgress", zap.Error(err))
 		}
 	}
 
@@ -62,19 +69,19 @@ func main() {
 
 		producer, err := kafka.NewSyncProducer(brokers)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Fatal("failed to create kafka sync producer", zap.Error(err))
 		}
 
 		asyncProducer, err := kafka.NewAsyncProducer(brokers)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Fatal("failed to create kafka async producer", zap.Error(err))
 		}
 
 		onSuccess := func(id string) {
-			log.Println("order success", id)
+			logger.Info("order success", zap.String("id", id))
 		}
 		onFailed := func(id string) {
-			log.Println("order failed", id)
+			logger.Error("order failed", zap.String("id", id))
 		}
 
 		ns = notification.NewOrderSender(
@@ -85,16 +92,21 @@ func main() {
 		)
 	}
 
+	go metrics.RunHttpServer(config.ConfigData.Services.Loms.MetricsPort)
+
 	{
 		lis, err := net.Listen("tcp", ":"+config.ConfigData.Services.Loms.Port)
 		if err != nil {
-			log.Fatalf("failed to listen: %v", err)
+			logger.Fatal("failed to listen", zap.Error(err))
 		}
 
+		tracing.Init("loms")
 		s := grpc.NewServer(
 			grpc.UnaryInterceptor(
 				grpcMiddleware.ChainUnaryServer(
 					interceptors.LoggingInterceptor,
+					metrics.Intercept,
+					otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
 				),
 			),
 		)
@@ -112,17 +124,15 @@ func main() {
 					case <-ticker.C:
 						orders, err := dmn.CancelUnpayedOrders(ctx, time.Now().Add(time.Duration(-10)*time.Minute))
 						if err != nil {
-							log.Printf("Falied to cancel updayed orders due to %v \n", err)
+							logger.Error("Falied to cancel updayed orders due to", zap.Error(err))
 						} else if len(orders) == 0 {
-							log.Println("Nothing to cancel")
+							logger.Info("Nothing to cancel")
 						} else {
-							for _, orderId := range orders {
-								log.Printf("Order %d has been canceled\n", orderId)
-							}
+							logger.Debug("Orders has been canceled", zap.Int64s("ids", orders))
 						}
 
 					case <-ctx.Done():
-						fmt.Println("Goodbye!")
+						logger.Info("Goodbye!")
 						return
 					}
 				}
@@ -130,10 +140,9 @@ func main() {
 
 		}
 
-		log.Printf("server listening at %v", lis.Addr())
-
+		logger.Info("server listening at ", zap.String("addr", lis.Addr().String()))
 		if err = s.Serve(lis); err != nil {
-			log.Fatalf("failed to serve: %v", err)
+			logger.Fatal("failed to serve", zap.Error(err))
 		}
 	}
 }

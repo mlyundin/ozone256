@@ -2,12 +2,13 @@ package notification
 
 import (
 	"fmt"
-	"log"
+	"route256/libs/logger"
 	desc "route256/loms/pkg/loms"
 	"route256/loms/pkg/model"
 	"time"
 
 	"github.com/Shopify/sarama"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -32,7 +33,7 @@ func NewOrderSender(producer1 sarama.SyncProducer, producer2 sarama.AsyncProduce
 			bytes, _ := e.Msg.Key.Encode()
 
 			onFailed(string(bytes))
-			log.Println(e.Msg.Key, e.Error())
+			logger.Error("Get error", zap.Error(e))
 		}
 	}()
 
@@ -42,7 +43,7 @@ func NewOrderSender(producer1 sarama.SyncProducer, producer2 sarama.AsyncProduce
 			bytes, _ := m.Key.Encode()
 
 			onSuccess(string(bytes))
-			log.Printf("order id: %s, partition: %d, offset: %d\n", string(bytes), m.Partition, m.Offset)
+			logger.Info(fmt.Sprintf("order id: %s, partition: %d, offset: %d", string(bytes), m.Partition, m.Offset))
 		}
 	}()
 
@@ -70,6 +71,6 @@ func (s *notificationSender) SendOrderStatusUpdate(orderID int64, newStatus, old
 		return err
 	}
 
-	log.Printf("order id: %d, partition: %d, offset: %d", orderID, partition, offset)
+	logger.Info(fmt.Sprintf("order id: %d, partition: %d, offset: %d", orderID, partition, offset))
 	return nil
 }

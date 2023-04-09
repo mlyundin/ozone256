@@ -2,7 +2,9 @@ package domain
 
 import (
 	"context"
-	"log"
+	"route256/libs/logger"
+
+	"go.uber.org/zap"
 )
 
 func (m *Model) Purchase(ctx context.Context, userID int64) error {
@@ -16,7 +18,7 @@ func (m *Model) Purchase(ctx context.Context, userID int64) error {
 		return err
 	}
 
-	log.Printf("Create order %d\n", orderID)
+	logger.Info("Create order", zap.Int64("orderId", orderID))
 
 	return nil
 }

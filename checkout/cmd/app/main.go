@@ -12,13 +12,19 @@ import (
 	desc "route256/checkout/pkg/checkout"
 	"route256/libs/config"
 	"route256/libs/interceptors"
+	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/libs/postgress/transactor"
+	"route256/libs/tracing"
 	lomcln "route256/loms/pkg/client/grpc/loms-service"
 	productcln "route256/product/pkg/client/grpc/product-service"
 	"time"
 
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/opentracing/opentracing-go"
+	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -35,21 +41,26 @@ func main() {
 		log.Fatal("config init", err)
 	}
 
+	logger.Init(config.ConfigData.Services.Logging.Devel)
+	tracing.Init("checkout")
+
+	// Loms
 	connLoms, err := grpc.DialContext(context.Background(), config.ConfigData.Services.Loms.Url(),
-		grpc.WithTransportCredentials(insecure.NewCredentials()))
+		grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
-		log.Fatalf("failed to connect to server: %v", err)
+		logger.Fatal("failed to connect to server", zap.Error(err))
 	}
 	defer connLoms.Close()
 	lomsClient := loms.New(lomcln.New(connLoms))
 
+	// Product
 	inter := interceptors.NewClientRateLimiterInterceptor(rate.NewLimiter(rate.Every(time.Second/productRateLimit), productRateLimit))
 	connProduct, err := grpc.DialContext(context.Background(),
 		config.ConfigData.Services.Products.Url(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(inter.Intercept))
+		grpc.WithChainUnaryInterceptor(inter.Intercept, otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())))
 	if err != nil {
-		log.Fatalf("failed to connect to server: %v", err)
+		logger.Fatal("failed to connect to server", zap.Error(err))
 	}
 	defer connProduct.Close()
 	productClient := products.New(productcln.New(connProduct), config.ConfigData.Services.Products.Token)
@@ -57,7 +68,7 @@ func main() {
 	ctx := context.Background()
 	pool, err := pgxpool.Connect(ctx, config.ConfigData.Databases.Checkout.Connection())
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("failed to connect to postgress", zap.Error(err))
 	}
 	defer pool.Close()
 	{
@@ -68,21 +79,25 @@ func main() {
 		config.MaxConns = 10
 
 		if err := pool.Ping(ctx); err != nil {
-			log.Fatal(err)
+			logger.Fatal("failed ping to postgress", zap.Error(err))
 		}
 	}
 	cartHandler := respository.New(transactor.New(pool))
 
+	go metrics.RunHttpServer(config.ConfigData.Services.Checkout.MetricsPort)
+
 	{
 		lis, err := net.Listen("tcp", ":"+config.ConfigData.Services.Checkout.Port)
 		if err != nil {
-			log.Fatalf("failed to listen: %v", err)
+			logger.Fatal("failed to listen", zap.Error(err))
 		}
 
 		server := grpc.NewServer(
 			grpc.UnaryInterceptor(
 				grpcMiddleware.ChainUnaryServer(
 					interceptors.LoggingInterceptor,
+					metrics.Intercept,
+					otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
 				),
 			),
 		)
@@ -91,9 +106,9 @@ func main() {
 		domain := domain.New(lomsClient, productClient, cartHandler)
 		desc.RegisterCheckoutServer(server, checkout.New(domain))
 
-		log.Printf("server listening at %v", lis.Addr())
+		logger.Info("server listening at", zap.String("adress", lis.Addr().String()))
 		if err = server.Serve(lis); err != nil {
-			log.Fatalf("failed to serve: %v", err)
+			logger.Fatal("failed to serve", zap.Error(err))
 		}
 	}
 }
