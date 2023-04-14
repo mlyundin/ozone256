@@ -2,9 +2,12 @@ package loms_client
 
 import (
 	"context"
+	"fmt"
+	"route256/libs/cache"
 	"route256/libs/logger"
 	"route256/libs/workerpool"
 	productServiceAPI "route256/product/pkg/product"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -24,23 +27,33 @@ type Client interface {
 }
 
 type client struct {
-	noteClient productServiceAPI.ProductServiceClient
+	noteClient   productServiceAPI.ProductServiceClient
+	productCache *memorycache.Cache[uint32, *Product]
 }
 
 func New(cc *grpc.ClientConn) *client {
 	return &client{
-		noteClient: productServiceAPI.NewProductServiceClient(cc),
+		noteClient:   productServiceAPI.NewProductServiceClient(cc),
+		productCache: memorycache.New[uint32, *Product](time.Minute*10, time.Minute*20),
 	}
 }
 
 func (c *client) GetProduct(ctx context.Context, token string, sku uint32) (*Product, error) {
 	logger.Info("Send GetProduct for ", zap.Uint32("sku", sku))
-	res, err := c.noteClient.GetProduct(ctx, &productServiceAPI.GetProductRequest{Token: token, Sku: sku})
-	if err != nil {
-		return nil, err
+
+	product, found := c.productCache.Get(sku)
+	if !found {
+		res, err := c.noteClient.GetProduct(ctx, &productServiceAPI.GetProductRequest{Token: token, Sku: sku})
+		product = &Product{Name: res.Name, Price: res.Price}
+		if err != nil {
+			return nil, err
+		}
+		c.productCache.Set(sku, product, 0)
+	} else {
+		logger.Debug(fmt.Sprintf("Used data from cash for sku: %d", sku))
 	}
 
-	return &Product{Name: res.Name, Price: res.Price}, nil
+	return product, nil
 }
 
 type ProductRes struct {
